@@ -445,6 +445,24 @@
             animation: slideIn 0.3s ease;
         }
 
+        .validation-error {
+            display: none;
+            background: #fdecea;
+            border: 1px solid #f5c2c0;
+            color: #b42318;
+            padding: 0.85rem 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .validation-error.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -806,7 +824,7 @@
             margin-bottom: 2rem;
         }
 
-        /* CTA Section */
+        /* Final CTA Section */
         .final-cta {
             padding: 100px 2rem;
             background: var(--white);
@@ -1083,6 +1101,8 @@
 
                 <input type="hidden" id="selectedDateTime" name="selectedDateTime">
 
+                <div class="validation-error" id="auditValidationError">Please select a date and time above before confirming.</div>
+
                 <button type="submit" class="submit-button" id="auditSubmitBtn">Confirm Your Audit Slot</button>
             </form>
 
@@ -1234,8 +1254,8 @@
                 <div class="footer-section">
                     <h3>Legal</h3>
                     <ul>
-                        <li><a href="#" onclick="alert('Terms of Service page would open here')">Terms of Service</a></li>
-                        <li><a href="#" onclick="alert('Privacy Policy page would open here')">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms of Service</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
                     </ul>
                 </div>
             </div>
@@ -1248,22 +1268,43 @@
 
     <script>
         // Available time slots configuration
-        // Mark your free time slots here
-        const availableSlots = {
-            // Format: "YYYY-MM-DD": ["09:00", "10:00", "14:00", "15:00"]
-            // Example available dates with time slots
-            "2025-01-15": ["09:00", "10:00", "14:00", "15:00"],
-            "2025-01-16": ["11:00", "12:00", "15:00", "16:00"],
-            "2025-01-17": ["09:00", "13:00", "14:00"],
-            "2025-01-20": ["10:00", "11:00", "14:00", "15:00", "16:00"],
-            "2025-01-21": ["09:00", "10:00", "15:00"],
-            "2025-01-22": ["11:00", "13:00", "14:00", "15:00"],
-            "2025-01-23": ["09:00", "10:00", "11:00", "16:00"],
-            "2025-01-24": ["10:00", "14:00", "15:00"],
-            // Add more dates as needed
-        };
+        // Generated dynamically so the calendar always shows real, bookable
+        // dates starting from tomorrow. Swap generateAvailableSlots() for a
+        // real backend/API call when this goes live.
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
-        let currentDate = new Date(2025, 0, 1); // Start from January 2025
+        function generateAvailableSlots() {
+            const allTimes = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
+            const slots = {};
+            const cursor = new Date();
+            cursor.setDate(cursor.getDate() + 1); // earliest slot is tomorrow
+
+            let weekdaysAdded = 0;
+            while (weekdaysAdded < 12) {
+                const dow = cursor.getDay();
+                if (dow !== 0 && dow !== 6) { // skip weekends
+                    // Deterministic but varied subset of times per day
+                    const offset = cursor.getDate() % allTimes.length;
+                    const daySlots = [
+                        allTimes[offset % allTimes.length],
+                        allTimes[(offset + 2) % allTimes.length],
+                        allTimes[(offset + 4) % allTimes.length]
+                    ].sort();
+                    slots[formatDate(cursor)] = [...new Set(daySlots)];
+                    weekdaysAdded++;
+                }
+                cursor.setDate(cursor.getDate() + 1);
+            }
+            return slots;
+        }
+
+        const availableSlots = generateAvailableSlots();
+        let currentDate = new Date(); // Start from the current month
         let selectedDate = null;
         let selectedTime = null;
 
@@ -1290,14 +1331,17 @@
         }
 
         // Form data management
+        // In-memory only: carries a visitor's details between the two modals
+        // within a single session. Wire this to your CRM/backend on launch.
+        let storedFormData = null;
+
         function saveFormData(formData) {
-            localStorage.setItem('logicansFormData', JSON.stringify(formData));
+            storedFormData = { ...(storedFormData || {}), ...formData };
         }
 
         function loadFormData() {
-            const savedData = localStorage.getItem('logicansFormData');
-            if (savedData) {
-                const data = JSON.parse(savedData);
+            if (storedFormData) {
+                const data = storedFormData;
                 // Load to Get Started form
                 if (document.getElementById('gName')) {
                     document.getElementById('gName').value = data.name || '';
@@ -1405,13 +1449,6 @@
             }
         }
 
-        function formatDate(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
         function previousMonth() {
             currentDate.setMonth(currentDate.getMonth() - 1);
             renderCalendar();
@@ -1479,11 +1516,16 @@
         function handleClaimAuditSubmit(event) {
             event.preventDefault();
             
+            const validationError = document.getElementById('auditValidationError');
+
             if (!selectedDate || !selectedTime) {
-                alert('Please select a date and time for your audit call');
+                validationError.classList.add('show');
+                validationError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
-            
+
+            validationError.classList.remove('show');
+
             const formData = {
                 name: document.getElementById('aName').value,
                 phone: document.getElementById('aPhone').value,
@@ -1503,11 +1545,8 @@
             const successMsg = document.getElementById('auditSuccess');
             successMsg.classList.add('show');
             
-            console.log('Audit Scheduled:', formData);
-            
-            // Here you would send data to your backend/Airtable
-            // alert(`Audit scheduled for: ${formData.selectedDateTime}`);
-            
+            // TODO: send formData to your backend/CRM (e.g. Airtable, HubSpot) here.
+
             // Auto-close modal after 3 seconds
             setTimeout(() => {
                 closeClaimAuditModal();
