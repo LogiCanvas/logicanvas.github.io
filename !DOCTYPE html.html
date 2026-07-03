@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LogiCanvas &mdash; AI-Powered Business Automation Agency</title>
+  <meta name="description" content="LogiCanvas architects AI workflows and conversion-ready storefronts so you can focus on what actually grows your business. Stop wasting time on repetitive tasks." />
+  <meta name="keywords" content="AI agency, business automation, n8n workflows, Framer storefronts, AI-powered systems" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { inter: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: { blue: '#2563EB', 'blue-dark': '#1D4ED8', 'blue-light': '#EFF6FF', 'blue-mid': '#DBEAFE', slate: '#0F172A' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    html { scroll-behavior: smooth; }
+    .hero-bg {
+      background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(37,99,235,.08) 0%, transparent 60%),
+                  radial-gradient(ellipse 50% 40% at 10% 80%, rgba(37,99,235,.05) 0%, transparent 50%), #fff;
+    }
+    .glow-circle {
+      background: radial-gradient(circle, rgba(37,99,235,.18) 0%, rgba(37,99,235,.08) 50%, transparent 75%);
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%,100% { box-shadow: 0 0 30px rgba(37,99,235,.3); }
+      50% { box-shadow: 0 0 60px rgba(37,99,235,.6); }
+    }
+    .float-card { animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    .accordion-arrow { transition: transform .3s ease; }
+    .accordion-arrow.open { transform: rotate(180deg); }
+    .accordion-content { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+    .accordion-content.open { max-height: 300px; }
+    .blueprint-card { transition: all .3s ease; }
+    .blueprint-card:hover { transform: translateY(-4px); }
+    .pillar-card { transition: all .3s ease; }
+    .pillar-card:hover { border-color: #2563EB; transform: translateY(-3px); }
+    .stat-number {
+      background: linear-gradient(135deg,#2563EB 0%,#1D4ED8 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .section-label::before {
+      content: ''; display: inline-block; width: 8px; height: 8px;
+      background: #2563EB; border-radius: 50%; margin-right: 8px; vertical-align: middle;
+    }
+    .btn-primary { transition: all .2s ease; background: #2563EB; }
+    .btn-primary:hover { background: #1D4ED8; transform: translateY(-1px); box-shadow: 0 8px 25px rgba(37,99,235,.35); }
+    .testimonial-card { background: linear-gradient(135deg,#f8faff 0%,#fff 100%); border: 1px solid #DBEAFE; }
+    .pricing-highlight { border: 2px solid #2563EB; background: linear-gradient(135deg,#EFF6FF 0%,#fff 100%); }
+    .footer-cta { background: linear-gradient(135deg,#0F172A 0%,#1E293B 100%); }
+    .gear-spin { animation: spin 8s linear infinite; }
+    @keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+    .logo-mark { background: linear-gradient(135deg,#2563EB 0%,#1D4ED8 100%); }
+    .portfolio-placeholder { background: linear-gradient(135deg,#f0f4ff 0%,#e8efff 50%,#f8faff 100%); border: 2px dashed #BFDBFE; }
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: block; }
+    .nav-scrolled { box-shadow: 0 1px 20px rgba(15,23,42,.08); }
+  </style>
+</head>
+<body class="bg-white text-slate-900 antialiased">
+
+<!-- ===== NAVIGATION ===== -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <!-- Logo -->
+      <div class="flex items-center gap-3">
+        <div class="logo-mark w-8 h-8 rounded-lg flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="1" y="1" width="6" height="6" rx="1" fill="white" opacity=".9"/>
+            <rect x="11" y="1" width="6" height="6" rx="1" fill="white" opacity=".6"/>
+            <rect x="1" y="11" width="6" height="6" rx="1" fill="white" opacity=".6"/>
+            <rect x="11" y="11" width="6" height="6" rx="1" fill="white" opacity=".9"/>
+          </svg>
+        </div>
+        <a href="#home" class="text-lg font-bold text-slate-900 tracking-tight">LogiCanvas</a>
+        <span class="text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full tracking-wider">AI AGENCY</span>
+      </div>
+      <!-- Desktop Nav -->
+      <div class="hidden md:flex items-center gap-1">
+        <a href="#home" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">Home</a>
+        <a href="#problem" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">Our Belief</a>
+        <a href="#about" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">About Us</a>
+        <a href="#portfolio" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">Portfolio</a>
+        <a href="#blueprints" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">Blueprints</a>
+        <a href="#pricing" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">Pricing</a>
+      </div>
+      <div class="hidden md:flex">
+        <button id="nav-cta" class="btn-primary text-white text-sm font-semibold px-5 py-2 rounded-xl">Get Started &rsaquo;</button>
+      </div>
+      <!-- Mobile Toggle -->
+      <button id="menu-toggle" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" aria-label="Menu">
+        <svg id="menu-icon-open" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+        <svg id="menu-icon-close" class="hidden" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="md:hidden bg-white border-t border-slate-100 px-4 py-4">
+    <div class="flex flex-col gap-1">
+      <a href="#home" class="mobile-nav-link px-3 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">Home</a>
+      <a href="#problem" class="mobile-nav-link px-3 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">Our Belief</a>
+      <a href="#about" class="mobile-nav-link px-3 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">About Us</a>
+      <a href="#portfolio" class="mobile-nav-link px-3 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">Portfolio</a>
+      <a href="#blueprints" class="mobile-nav-link px-3 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">Blueprints</a>
+      <a href="#pricing" class="mobile-nav-link px-3 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">Pricing</a>
+      <button id="mobile-cta" class="btn-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl mt-2">Get Started &rsaquo;</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section id="home" class="hero-bg pt-32 pb-24 lg:pt-40 lg:pb-32 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <!-- Left Content -->
+      <div class="space-y-8">
+        <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold px-4 py-2 rounded-full">
+          <span class="text-base">&#9889;</span>
+          <span class="tracking-wide">AI-Powered Business Automation</span>
+        </div>
+        <div class="space-y-3">
+          <p class="text-slate-400 text-lg font-light italic tracking-wide">&ldquo;Stop wasting time&rdquo;</p>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-slate-900">
+            Automate your tasks by<span class="text-blue-600"> AI powered system.</span>
+          </h1>
+        </div>
+        <p class="text-slate-500 text-base sm:text-lg leading-relaxed max-w-xl">
+          Your business bleeds <strong class="text-slate-700">15+ hours every week</strong> to repetitive busywork &mdash; invoices, spreadsheets, follow-ups. We architect AI workflows and conversion-ready storefronts so you can focus on what actually grows your business.
+        </p>
+        <div>
+          <a href="#portfolio" class="inline-flex items-center gap-2 text-blue-600 text-sm font-semibold hover:text-blue-700 transition-colors group">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            Explore Portfolio
+            <span class="group-hover:translate-x-1 transition-transform inline-block">&rarr;</span>
+          </a>
+        </div>
+        <!-- Book Appointment Card -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm max-w-lg hover:shadow-md transition-shadow cursor-pointer" id="book-card">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-slate-700 font-semibold text-sm leading-snug">Interested? Book an appointment for free</p>
+              <p class="text-slate-400 text-xs mt-1">No commitment required. Just a conversation.</p>
+            </div>
+            <div class="ml-auto flex-shrink-0"><span class="text-blue-600 text-lg">&rarr;</span></div>
+          </div>
+        </div>
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-6 pt-4 border-t border-slate-100">
+          <div class="text-center">
+            <div class="stat-number text-3xl font-black">100%</div>
+            <p class="text-slate-500 text-xs mt-1 leading-tight">Custom-built workflows</p>
+          </div>
+          <div class="text-center border-x border-slate-100">
+            <div class="stat-number text-3xl font-black">24/7</div>
+            <p class="text-slate-500 text-xs mt-1 leading-tight">Automated operations</p>
+          </div>
+          <div class="text-center">
+            <div class="stat-number text-3xl font-black">30-day</div>
+            <p class="text-slate-500 text-xs mt-1 leading-tight">Post-launch support</p>
+          </div>
+        </div>
+      </div>
+      <!-- Right: Floating Card -->
+      <div class="relative flex items-center justify-center lg:justify-end">
+        <div class="glow-circle absolute w-80 h-80 rounded-full"></div>
+        <div class="float-card relative z-10 bg-white rounded-3xl shadow-2xl p-8 w-72 border border-blue-50">
+          <div class="flex items-center justify-center mb-6">
+            <div class="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
+              <svg class="gear-spin" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L13.09 8.26L19 5L16.74 10.91L23 12L16.74 13.09L19 19L13.09 16.74L12 23L10.91 16.74L5 19L7.26 13.09L1 12L7.26 10.91L5 5L10.91 7.26L12 2Z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-center space-y-2 mb-6">
+            <h3 class="text-slate-900 font-bold text-lg">AI-Powered Systems</h3>
+            <p class="text-slate-400 text-xs">Intelligent workflows designed to scale</p>
+          </div>
+          <div class="flex items-center justify-center gap-2 bg-blue-50 border border-blue-200 rounded-xl p-3">
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-blue-700 font-bold text-xs tracking-widest">ALWAYS ON</span>
+          </div>
+          <div class="mt-5 grid grid-cols-2 gap-3">
+            <div class="bg-slate-50 rounded-xl p-3 text-center">
+              <div class="text-blue-600 font-extrabold text-lg">99.9%</div>
+              <div class="text-slate-400 text-xs mt-0.5">Uptime</div>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-3 text-center">
+              <div class="text-blue-600 font-extrabold text-lg">0ms</div>
+              <div class="text-slate-400 text-xs mt-0.5">Manual effort</div>
+            </div>
+          </div>
+        </div>
+        <!-- Dot grid decoration -->
+        <div class="absolute top-4 right-4 grid grid-cols-5 gap-2 opacity-20">
+          <div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+          <div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+          <div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+          <div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div><div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== THE PROBLEM ===== -->
+<section id="problem" class="py-24 lg:py-32 bg-slate-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <!-- Visual breakdown card -->
+      <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+        <div class="space-y-4">
+          <div class="flex items-center gap-3 bg-red-50 border border-red-100 rounded-xl p-4">
+            <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div><p class="text-slate-800 font-semibold text-sm">Manual Invoice Processing</p><p class="text-red-500 text-xs mt-0.5">3.5 hrs lost weekly</p></div>
+          </div>
+          <div class="flex items-center gap-3 bg-orange-50 border border-orange-100 rounded-xl p-4">
+            <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            </div>
+            <div><p class="text-slate-800 font-semibold text-sm">Spreadsheet Data Entry</p><p class="text-orange-500 text-xs mt-0.5">4 hrs lost weekly</p></div>
+          </div>
+          <div class="flex items-center gap-3 bg-yellow-50 border border-yellow-100 rounded-xl p-4">
+            <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EAB308" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div><p class="text-slate-800 font-semibold text-sm">Follow-up Emails &amp; Calls</p><p class="text-yellow-600 text-xs mt-0.5">5 hrs lost weekly</p></div>
+          </div>
+          <div class="flex items-center gap-3 bg-slate-100 border border-slate-200 rounded-xl p-4">
+            <div class="w-8 h-8 bg-slate-200 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div><p class="text-slate-800 font-semibold text-sm">Scheduling &amp; Coordination</p><p class="text-slate-400 text-xs mt-0.5">2.5 hrs lost weekly</p></div>
+          </div>
+          <div class="pt-4 border-t border-slate-200 flex items-center justify-between">
+            <span class="text-slate-500 text-sm font-medium">Total time wasted weekly</span>
+            <span class="text-red-600 font-black text-xl">15+ hrs</span>
+          </div>
+        </div>
+      </div>
+      <!-- Text -->
+      <div class="space-y-6">
+        <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">The Problem</span>
+        <h2 class="text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">The Daily Grind Is Killing Your Growth.</h2>
+        <p class="text-slate-500 text-base leading-relaxed">Every morning, you wake up and immediately fall into the same cycle: chasing leads that ghosted you, updating three different spreadsheets, manually sending invoices that should have gone out days ago, and copy-pasting data between tools that don&rsquo;t talk to each other.</p>
+        <p class="text-slate-500 text-base leading-relaxed">You didn&rsquo;t start a business to become a full-time data entry clerk. Yet here you are, spending <strong class="text-slate-700">15+ hours every week</strong> on tasks that add zero value to your growth.</p>
+        <p class="text-slate-500 text-base leading-relaxed">This isn&rsquo;t a productivity problem. It&rsquo;s a systems problem. And systems can be fixed.</p>
+        <button id="problem-cta" class="btn-primary text-white font-semibold px-6 py-3 rounded-xl inline-flex items-center gap-2">
+          Fix My Systems <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT US ===== -->
+<section id="about" class="py-24 lg:py-32 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-16 items-start">
+      <div class="space-y-6">
+        <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">About Us</span>
+        <h2 class="text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Built to prevent<br/><span class="text-blue-600">business burnout.</span></h2>
+        <p class="text-slate-500 text-base leading-relaxed">LogiCanvas was founded after watching talented business owners &mdash; consultants, retailers, e-commerce sellers, freelancers &mdash; spend their best hours on work that machines can do better. The vision was simple: every serious business deserves the same operational leverage that Fortune 500 companies use, without the enterprise price tag.</p>
+        <p class="text-slate-500 text-base leading-relaxed">We&rsquo;re not a software company. We&rsquo;re not a generic marketing agency. We are systems architects &mdash; we design, build, and deploy the invisible infrastructure that makes your business run automatically while you focus on growth.</p>
+        <p class="text-slate-500 text-base leading-relaxed">Each engagement is handled with direct, personal accountability. When you work with LogiCanvas, you work with the founder &mdash; not a rotating team of contractors.</p>
+        <div class="flex items-center gap-3 pt-2">
+          <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <a href="mailto:manojnewdelhi9711@gmail.com" class="text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors">manojnewdelhi9711@gmail.com</a>
+        </div>
+      </div>
+      <div class="space-y-6">
+        <!-- Profile Card -->
+        <div class="bg-slate-900 rounded-3xl p-8 text-white">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-2xl font-black">M</div>
+            <div><h3 class="font-bold text-lg">Manoj</h3><p class="text-slate-400 text-sm">Founder &amp; Systems Architect</p></div>
+            <div class="ml-auto"><span class="bg-blue-600/20 text-blue-400 text-xs font-semibold px-3 py-1 rounded-full border border-blue-500/30">Available</span></div>
+          </div>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 text-sm text-slate-300"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>n8n Custom Workflow Architecture</div>
+            <div class="flex items-center gap-3 text-sm text-slate-300"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Framer Conversion Storefronts</div>
+            <div class="flex items-center gap-3 text-sm text-slate-300"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Brand Identity &amp; Visual Systems</div>
+            <div class="flex items-center gap-3 text-sm text-slate-300"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>AI-Powered Lead Generation</div>
+          </div>
+        </div>
+        <!-- Transparency Notice -->
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div>
+              <h4 class="text-amber-800 font-bold text-sm mb-2">Transparency Notice</h4>
+              <p class="text-amber-700 text-xs leading-relaxed">LogiCanvas operates as an independent freelance service provider and is not registered as a corporate entity with any government authority. All services are delivered under a direct freelance provider arrangement. Contact: <a href="mailto:manojnewdelhi9711@gmail.com" class="underline font-semibold">manojnewdelhi9711@gmail.com</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PORTFOLIO ===== -->
+<section id="portfolio" class="py-24 lg:py-32 bg-slate-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">Work</span>
+      <h2 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Recent Projects</h2>
+      <p class="mt-4 text-slate-500 text-base">Automation systems and storefronts delivered to real businesses.</p>
+    </div>
+    <div class="portfolio-placeholder rounded-3xl p-16 text-center max-w-3xl mx-auto">
+      <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+      </div>
+      <h3 class="text-slate-700 font-bold text-xl mb-3">Portfolio Coming Soon</h3>
+      <p class="text-slate-400 text-sm leading-relaxed max-w-md mx-auto mb-8">We&rsquo;re documenting our recent client work and building out detailed case studies. Check back soon or reach out directly to discuss your project needs.</p>
+      <button id="portfolio-cta" class="btn-primary text-white font-semibold px-6 py-3 rounded-xl inline-flex items-center gap-2">
+        Discuss Your Project <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== THREE PILLARS ===== -->
+<section id="pillars" class="py-24 lg:py-32 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mb-16">
+      <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">Our Approach</span>
+      <h2 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Three Pillars of Complete Business Automation.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="pillar-card bg-white border border-slate-200 rounded-3xl p-8">
+        <div class="text-blue-200 text-6xl font-black mb-6 leading-none">01</div>
+        <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+        </div>
+        <h3 class="text-slate-900 font-bold text-xl mb-3 leading-snug">Brand Identity That Converts</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-4">A brand that speaks before you do. We craft visual identities that command attention, build trust at first glance, and convert viewers into customers.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs font-medium text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">Adobe Suite</span>
+          <span class="text-xs font-medium text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">Canva Pro</span>
+        </div>
+      </div>
+      <div class="pillar-card bg-white border border-slate-200 rounded-3xl p-8">
+        <div class="text-blue-200 text-6xl font-black mb-6 leading-none">02</div>
+        <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/></svg>
+        </div>
+        <h3 class="text-slate-900 font-bold text-xl mb-3 leading-snug">Conversion-Engineered Storefronts</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-4">Not just a website &mdash; a revenue machine. We design and deploy landing pages and storefronts engineered from top to bottom to convert visitors into paying clients.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs font-medium text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">Framer</span>
+          <span class="text-xs font-medium text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">Securely Hosted</span>
+        </div>
+      </div>
+      <div class="pillar-card bg-white border border-slate-200 rounded-3xl p-8">
+        <div class="text-blue-200 text-6xl font-black mb-6 leading-none">03</div>
+        <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><path d="M12 2L13.09 8.26L19 5L16.74 10.91L23 12L16.74 13.09L19 19L13.09 16.74L12 23L10.91 16.74L5 19L7.26 13.09L1 12L7.26 10.91L5 5L10.91 7.26L12 2Z"/></svg>
+        </div>
+        <h3 class="text-slate-900 font-bold text-xl mb-3 leading-snug">Human-Grade AI Workflows</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-4">Automation that thinks and acts like your best employee &mdash; 24/7, without breaks, complaints, or errors. Custom n8n architectures that handle your operations end to end.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs font-medium text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">n8n</span>
+          <span class="text-xs font-medium text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">Custom Architecture</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BLUEPRINTS ===== -->
+<section id="blueprints" class="py-24 lg:py-32 bg-slate-900">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mb-16">
+      <span class="text-xs font-bold tracking-widest text-blue-400 uppercase flex items-center gap-2 mb-4">
+        <span class="w-2 h-2 bg-blue-400 rounded-full inline-block"></span>Blueprints
+      </span>
+      <h2 class="text-4xl sm:text-5xl font-extrabold text-white leading-tight">Pre-Engineered Blueprints.</h2>
+      <p class="mt-4 text-slate-400 text-base leading-relaxed">Proven automation frameworks ready to be customized for your business model. Start faster, scale smarter.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Blueprint 01 -->
+      <div class="blueprint-card bg-slate-800 border border-slate-700 rounded-3xl p-8 hover:border-blue-500">
+        <div class="text-slate-600 text-5xl font-black mb-6 leading-none">01</div>
+        <h3 class="text-white font-bold text-xl mb-3">The Local Retail &amp; Service Engine</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-6">Built for brick-and-mortar businesses and local service providers. Automates appointment booking, follow-up sequences, review collection, and inventory alerts.</p>
+        <div class="space-y-2 mb-8">
+          <div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Automated appointment reminders</div>
+          <div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Customer follow-up sequences</div>
+          <div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Review collection automation</div>
+        </div>
+        <button class="blueprint-btn w-full border border-slate-600 hover:border-blue-500 hover:bg-blue-600 text-slate-300 hover:text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200">Get this blueprint</button>
+      </div>
+      <!-- Blueprint 02 (Popular) -->
+      <div class="blueprint-card bg-blue-600 border border-blue-500 rounded-3xl p-8 hover:border-blue-400 relative overflow-hidden">
+        <div class="absolute top-4 right-4 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">POPULAR</div>
+        <div class="text-blue-400/40 text-5xl font-black mb-6 leading-none">02</div>
+        <h3 class="text-white font-bold text-xl mb-3">The E-Commerce Scaling Model</h3>
+        <p class="text-blue-100 text-sm leading-relaxed mb-6">Designed for online stores and product businesses. Automates order processing, abandoned cart recovery, supplier notifications, and customer support routing.</p>
+        <div class="space-y-2 mb-8">
+          <div class="flex items-center gap-2 text-blue-100 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Abandoned cart recovery</div>
+          <div class="flex items-center gap-2 text-blue-100 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Order &amp; fulfillment automation</div>
+          <div class="flex items-center gap-2 text-blue-100 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Inventory &amp; supplier alerts</div>
+        </div>
+        <button class="blueprint-btn w-full bg-white hover:bg-blue-50 text-blue-600 text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200">Get this blueprint</button>
+      </div>
+      <!-- Blueprint 03 -->
+      <div class="blueprint-card bg-slate-800 border border-slate-700 rounded-3xl p-8 hover:border-blue-500">
+        <div class="text-slate-600 text-5xl font-black mb-6 leading-none">03</div>
+        <h3 class="text-white font-bold text-xl mb-3">The Freelancer &amp; Creator Pipeline</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-6">Purpose-built for independent professionals and content creators. Automates lead capture, proposal delivery, contract signing, invoicing, and content scheduling.</p>
+        <div class="space-y-2 mb-8">
+          <div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Automated lead intake &amp; response</div>
+          <div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Proposal &amp; invoice automation</div>
+          <div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Content scheduling pipeline</div>
+        </div>
+        <button class="blueprint-btn w-full border border-slate-600 hover:border-blue-500 hover:bg-blue-600 text-slate-300 hover:text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200">Get this blueprint</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section id="testimonials" class="py-24 lg:py-32 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">Social Proof</span>
+      <h2 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">What Our Clients Say</h2>
+    </div>
+    <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div class="testimonial-card rounded-3xl p-8">
+        <div class="flex items-start gap-2 mb-6">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="#DBEAFE" class="flex-shrink-0 mt-1"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+          <p class="text-slate-700 text-sm leading-relaxed font-medium">&ldquo;We saved 10 hours a week immediately after launch. The invoice automation alone paid for the entire project within the first month. I genuinely can&rsquo;t believe we were doing this manually before.&rdquo;</p>
+        </div>
+        <div class="flex items-center gap-3 pt-4 border-t border-slate-200">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">R</div>
+          <div><p class="text-slate-800 font-semibold text-sm">Riya S.</p><p class="text-slate-400 text-xs">Online Retail Store Owner</p></div>
+          <div class="ml-auto flex gap-0.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card rounded-3xl p-8">
+        <div class="flex items-start gap-2 mb-6">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="#DBEAFE" class="flex-shrink-0 mt-1"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+          <p class="text-slate-700 text-sm leading-relaxed font-medium">&ldquo;The n8n workflow they built for my freelance business is insane. Client onboarding that used to take 2 hours now happens in 3 minutes. My whole operation runs while I sleep. This is what leverage looks like.&rdquo;</p>
+        </div>
+        <div class="flex items-center gap-3 pt-4 border-t border-slate-200">
+          <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">A</div>
+          <div><p class="text-slate-800 font-semibold text-sm">Arjun M.</p><p class="text-slate-400 text-xs">Freelance Consultant &amp; Creator</p></div>
+          <div class="ml-auto flex gap-0.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section id="pricing" class="py-24 lg:py-32 bg-slate-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">Pricing</span>
+      <h2 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Aligned With Your Results.</h2>
+      <p class="mt-4 text-slate-500 text-base">No retainers. No hidden fees. Flat-fee projects aligned to your business outcomes.</p>
+    </div>
+    <div class="max-w-lg mx-auto">
+      <div class="pricing-highlight rounded-3xl p-8 relative">
+        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+          <span class="bg-blue-600 text-white text-xs font-bold px-5 py-2 rounded-full shadow-lg shadow-blue-200">MOST POPULAR</span>
+        </div>
+        <div class="pt-4">
+          <h3 class="text-slate-900 font-bold text-xl mb-1">Custom Automation &amp; Design Package</h3>
+          <p class="text-slate-400 text-sm mb-6">Everything you need to build, launch, and automate your business.</p>
+          <div class="bg-white rounded-2xl p-5 mb-6 text-center border border-blue-100">
+            <p class="text-slate-400 text-xs font-medium mb-1 uppercase tracking-wide">Starting at</p>
+            <div class="text-3xl font-black text-slate-900">INR &#8377;X,XXX<span class="text-slate-300 text-xl mx-2">/</span><span class="text-2xl">$X,XXX</span></div>
+            <p class="text-slate-400 text-xs mt-1">Custom quote based on your scope</p>
+          </div>
+          <div class="space-y-3 mb-8">
+            <div class="flex items-center gap-3 text-sm text-slate-700"><div class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>Full workflow audit &amp; systems mapping</div>
+            <div class="flex items-center gap-3 text-sm text-slate-700"><div class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>Custom n8n automation integrations</div>
+            <div class="flex items-center gap-3 text-sm text-slate-700"><div class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>Framer storefront or landing page</div>
+            <div class="flex items-center gap-3 text-sm text-slate-700"><div class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>Brand identity &amp; visual assets</div>
+            <div class="flex items-center gap-3 text-sm text-slate-700"><div class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>30 days post-launch support included</div>
+            <div class="flex items-center gap-3 text-sm text-slate-700"><div class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>Full code &amp; asset ownership transfer</div>
+            <div class="flex items-center gap-3 text-sm text-slate-700"><div class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>Direct access to founder &mdash; no middlemen</div>
+          </div>
+          <button id="pricing-cta" class="btn-primary w-full text-white font-bold py-4 rounded-2xl text-base">Get a Custom Quote &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section id="faq" class="py-24 lg:py-32 bg-white">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">FAQ</span>
+      <h2 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Frequently Asked Questions</h2>
+    </div>
+    <div class="space-y-4">
+      <div class="faq-item bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 transition-colors" aria-expanded="false">
+          <span class="text-slate-800 font-semibold text-sm pr-4">How long does setup take?</span>
+          <svg class="accordion-arrow flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="accordion-content">
+          <div class="px-6 pb-6"><p class="text-slate-500 text-sm leading-relaxed">Setup timelines depend on the scope of your project. Typically, a complete automation package takes 1&ndash;3 weeks from initial audit to launch. Simpler workflow builds can be delivered in as little as 5&ndash;7 business days. We&rsquo;ll give you a precise timeline during your free consultation call before any commitment is made.</p></div>
+        </div>
+      </div>
+      <div class="faq-item bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 transition-colors" aria-expanded="false">
+          <span class="text-slate-800 font-semibold text-sm pr-4">Do you offer support after launch?</span>
+          <svg class="accordion-arrow flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="accordion-content">
+          <div class="px-6 pb-6"><p class="text-slate-500 text-sm leading-relaxed">Yes. Every Custom Package includes a dedicated 30-day post-launch optimization window. During this period, we monitor your systems, fix any bugs that emerge, and make adjustments based on real-world performance. After the 30 days, ongoing support can be arranged on a case-by-case basis.</p></div>
+        </div>
+      </div>
+      <div class="faq-item bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 transition-colors" aria-expanded="false">
+          <span class="text-slate-800 font-semibold text-sm pr-4">What happens if something breaks?</span>
+          <svg class="accordion-arrow flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="accordion-content">
+          <div class="px-6 pb-6"><p class="text-slate-500 text-sm leading-relaxed">Within the 30-day support window, we fix it. After that window, most issues are straightforward to resolve &mdash; we&rsquo;ll provide you with clear documentation so your team can handle minor fixes independently. For major issues caused by third-party platform changes (like API updates from n8n, Framer, or Google), we&rsquo;ll assess and quote a fix at a fair rate.</p></div>
+        </div>
+      </div>
+      <div class="faq-item bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 transition-colors" aria-expanded="false">
+          <span class="text-slate-800 font-semibold text-sm pr-4">Do I need any technical knowledge?</span>
+          <svg class="accordion-arrow flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="accordion-content">
+          <div class="px-6 pb-6"><p class="text-slate-500 text-sm leading-relaxed">Zero technical knowledge required. We handle everything from system design to deployment. The only thing you need to provide is access to your existing tools (we&rsquo;ll guide you through this step-by-step) and clarity on what you want to automate. If you can explain your current process in plain English, we can build the automation.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section id="contact" class="footer-cta py-24 lg:py-32">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-blue-300 text-xs font-semibold px-4 py-2 rounded-full mb-8">
+      <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>Available for New Projects
+    </div>
+    <h2 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">Stop Trading<br/><span class="text-blue-400">Time for Money.</span></h2>
+    <p class="text-slate-400 text-lg leading-relaxed mb-10 max-w-2xl mx-auto">Every week you wait is another 15+ hours lost. Your competitors are already automating. Let&rsquo;s build systems that work while you don&rsquo;t.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-10">
+      <button id="final-cta-1" class="btn-primary text-white font-bold px-8 py-4 rounded-2xl text-base">Claim Free Appointment &rarr;</button>
+      <button id="final-cta-2" class="font-bold px-8 py-4 rounded-2xl text-base border border-white/30 text-white hover:bg-white hover:text-slate-900 transition-all duration-200">Start a Project</button>
+    </div>
+    <div class="flex items-center justify-center gap-3">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <a href="mailto:manojnewdelhi9711@gmail.com" class="text-slate-400 hover:text-blue-400 text-sm font-medium transition-colors">manojnewdelhi9711@gmail.com</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="bg-slate-950 border-t border-slate-800 py-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+      <div class="col-span-2 md:col-span-1">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="logo-mark w-7 h-7 rounded-lg flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="white" opacity=".9"/><rect x="11" y="1" width="6" height="6" rx="1" fill="white" opacity=".6"/><rect x="1" y="11" width="6" height="6" rx="1" fill="white" opacity=".6"/><rect x="11" y="11" width="6" height="6" rx="1" fill="white" opacity=".9"/></svg>
+          </div>
+          <span class="text-white font-bold">LogiCanvas</span>
+        </div>
+        <p class="text-slate-400 text-xs leading-relaxed mb-4">AI-powered automation systems for modern businesses. Built for growth, not busywork.</p>
+        <a href="mailto:manojnewdelhi9711@gmail.com" class="text-blue-400 text-xs hover:text-blue-300 transition-colors">manojnewdelhi9711@gmail.com</a>
+      </div>
+      <div>
+        <h4 class="text-white font-semibold text-sm mb-4">Navigation</h4>
+        <div class="space-y-3">
+          <a href="#home" class="block text-slate-400 text-xs hover:text-white transition-colors">Home</a>
+          <a href="#problem" class="block text-slate-400 text-xs hover:text-white transition-colors">Our Belief</a>
+          <a href="#about" class="block text-slate-400 text-xs hover:text-white transition-colors">About Us</a>
+          <a href="#portfolio" class="block text-slate-400 text-xs hover:text-white transition-colors">Portfolio</a>
+          <a href="#blueprints" class="block text-slate-400 text-xs hover:text-white transition-colors">Blueprints</a>
+          <a href="#pricing" class="block text-slate-400 text-xs hover:text-white transition-colors">Pricing</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-white font-semibold text-sm mb-4">Services</h4>
+        <div class="space-y-3">
+          <a href="#pillars" class="block text-slate-400 text-xs hover:text-white transition-colors">Brand Identity</a>
+          <a href="#pillars" class="block text-slate-400 text-xs hover:text-white transition-colors">AI Workflows</a>
+          <a href="#pillars" class="block text-slate-400 text-xs hover:text-white transition-colors">Framer Storefronts</a>
+          <a href="#blueprints" class="block text-slate-400 text-xs hover:text-white transition-colors">Automation Blueprints</a>
+          <a href="#faq" class="block text-slate-400 text-xs hover:text-white transition-colors">FAQ</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-white font-semibold text-sm mb-4">Legal &amp; Contact</h4>
+        <div class="space-y-3">
+          <a href="legal.html" class="block text-slate-400 text-xs hover:text-white transition-colors">Privacy Policy</a>
+          <a href="legal.html" class="block text-slate-400 text-xs hover:text-white transition-colors">Terms &amp; Conditions</a>
+          <a href="mailto:manojnewdelhi9711@gmail.com" class="block text-slate-400 text-xs hover:text-white transition-colors">Contact Us</a>
+          <a href="#contact" class="block text-slate-400 text-xs hover:text-white transition-colors">Book Appointment</a>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="text-slate-500 text-xs">&copy; 2026 LogiCanvas. All rights reserved.</p>
+      <p class="text-slate-600 text-xs">Independent Freelance Service Provider &middot; Not a registered entity</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== MODAL ===== -->
+<div id="modal-overlay" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+  <div id="modal-box" class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative transform transition-all duration-300 scale-95 opacity-0">
+    <button id="modal-close" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="text-center">
+      <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <h3 class="text-slate-900 font-extrabold text-xl mb-2">Book Your Free Session</h3>
+      <p class="text-slate-400 text-sm leading-relaxed mb-6">No commitment required. Just a focused 30-minute conversation to understand your business and identify where automation can have the biggest impact.</p>
+      <a href="mailto:manojnewdelhi9711@gmail.com?subject=Free%20Appointment%20Request%20%E2%80%94%20LogiCanvas&body=Hi%20Manoj%2C%0A%0AI%27d%20like%20to%20book%20a%20free%20consultation.%0A%0AName%3A%0ABusiness%3A%0ABrief%20description%3A" class="btn-primary w-full text-white font-bold py-3.5 rounded-2xl text-sm inline-block">
+        Send Email to Book &rarr;
+      </a>
+      <p class="text-slate-300 text-xs mt-4">Or email directly: <a href="mailto:manojnewdelhi9711@gmail.com" class="text-blue-500 hover:text-blue-600">manojnewdelhi9711@gmail.com</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => [...document.querySelectorAll(sel)];
+
+  // Smooth scroll
+  $$('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); closeMobileMenu(); }
+    });
+  });
+
+  // Navbar scroll effect
+  const nb = $('#navbar');
+  window.addEventListener('scroll', () => nb.classList.toggle('nav-scrolled', window.scrollY > 20), { passive: true });
+
+  // Mobile menu
+  const mt = $('#menu-toggle'), mm = $('#mobile-menu'), mio = $('#menu-icon-open'), mic = $('#menu-icon-close');
+  function closeMobileMenu() { mm.classList.remove('open'); mio.classList.remove('hidden'); mic.classList.add('hidden'); }
+  mt.addEventListener('click', () => {
+    const o = mm.classList.toggle('open');
+    mio.classList.toggle('hidden', o); mic.classList.toggle('hidden', !o);
+  });
+  document.addEventListener('click', e => { if (!nb.contains(e.target)) closeMobileMenu(); });
+
+  // FAQ Accordions
+  $$('.faq-trigger').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const item = tr.closest('.faq-item');
+      const content = item.querySelector('.accordion-content');
+      const arrow = tr.querySelector('.accordion-arrow');
+      const isOpen = content.classList.contains('open');
+      $$('.accordion-content').forEach(c => c.classList.remove('open'));
+      $$('.accordion-arrow').forEach(a => a.classList.remove('open'));
+      $$('.faq-trigger').forEach(t => t.setAttribute('aria-expanded', 'false'));
+      $$('.faq-item').forEach(i => i.style.borderColor = '');
+      if (!isOpen) { content.classList.add('open'); arrow.classList.add('open'); tr.setAttribute('aria-expanded', 'true'); item.style.borderColor = '#2563EB'; }
+    });
+  });
+
+  // Modal
+  const mo = $('#modal-overlay'), mb = $('#modal-box');
+  function openModal() { mo.classList.remove('hidden'); requestAnimationFrame(() => { mb.classList.remove('scale-95', 'opacity-0'); mb.classList.add('scale-100', 'opacity-100'); }); document.body.style.overflow = 'hidden'; }
+  function closeModal() { mb.classList.add('scale-95', 'opacity-0'); mb.classList.remove('scale-100', 'opacity-100'); setTimeout(() => { mo.classList.add('hidden'); document.body.style.overflow = ''; }, 250); }
+
+  ['#nav-cta', '#book-card', '#problem-cta', '#portfolio-cta', '#pricing-cta', '#final-cta-1', '#final-cta-2', '#mobile-cta'].forEach(s => {
+    const el = $(s); if (el) el.addEventListener('click', openModal);
+  });
+  $('#modal-close').addEventListener('click', closeModal);
+  mo.addEventListener('click', e => { if (e.target === mo) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // Blueprint buttons
+  $$('.blueprint-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const t = btn.closest('.blueprint-card')?.querySelector('h3')?.textContent || 'Blueprint';
+      if (confirm(`Interested in "${t}"?\n\nClick OK to email us and we'll send you the details.`)) {
+        window.location.href = `mailto:manojnewdelhi9711@gmail.com?subject=Blueprint%20Request%3A%20${encodeURIComponent(t)}&body=Hi%20Manoj%2C%0A%0AI%27m%20interested%20in%20the%20${encodeURIComponent(t)}%20blueprint.`;
+      }
+    });
+  });
+
+  // Scroll reveal
+  const ro = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; ro.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  $$('.pillar-card, .blueprint-card, .testimonial-card, .faq-item, .portfolio-placeholder').forEach(el => {
+    el.style.opacity = '0'; el.style.transform = 'translateY(24px)'; el.style.transition = 'opacity .5s ease, transform .5s ease'; ro.observe(el);
+  });
+</script>
+</body>
+</html>
