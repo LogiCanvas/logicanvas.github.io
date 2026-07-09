@@ -9,6 +9,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+  <!--
+    Tailwind Play CDN. This is the correct, officially documented URL —
+    "pinning" a version in the path (as an earlier pass here mistakenly
+    did) 404s and silently breaks all Tailwind styling, and adding
+    crossorigin="anonymous" without an integrity hash makes the browser
+    require CORS headers this CDN doesn't send, blocking the script
+    entirely. Neither is included here for that reason.
+    NOTE ON SRI: a true `integrity="sha384-..."` hash isn't practical for
+    this CDN — it's a JIT compiler that can change without a version bump,
+    so a hard-coded hash would break the site whenever that happens. If
+    you need a hash that's guaranteed stable, self-host this file instead
+    of loading it from the CDN.
+  -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -67,6 +80,45 @@
     #mobile-menu { display: none; }
     #mobile-menu.open { display: block; }
     .nav-scrolled { box-shadow: 0 1px 20px rgba(15,23,42,.08); }
+
+    /* ===== Admin: inline text editing ===== */
+    body.edit-mode-active [data-editable] {
+      outline: 2px dashed #2563EB;
+      outline-offset: 4px;
+      border-radius: 6px;
+      cursor: text;
+      transition: background-color .15s ease;
+    }
+    body.edit-mode-active [data-editable]:hover { background-color: rgba(37,99,235,.06); }
+    body.edit-mode-active [data-editable]:focus { background-color: rgba(37,99,235,.1); outline-color: #1D4ED8; outline-style: solid; }
+
+    /* ===== Admin: section / feature lock indicators ===== */
+    .admin-locked-banner {
+      background: #FEF3C7; border-bottom: 1px solid #FDE68A; color: #92400E;
+      font-size: .75rem; font-weight: 700; text-align: center; padding: .6rem 1rem;
+      display: flex; align-items: center; justify-content: center; gap: .4rem;
+      letter-spacing: .02em;
+    }
+    .admin-locked-section-body { opacity: .6; }
+    .feature-lock-badge {
+      display: inline-flex; align-items: center; gap: 4px; font-size: .7rem; font-weight: 700;
+      color: #92400E; background: #FEF3C7; border: 1px solid #FDE68A; border-radius: 9999px;
+      padding: 2px 8px; margin-left: 8px; white-space: nowrap; vertical-align: middle;
+    }
+    [data-locked="true"] { opacity: .5; cursor: not-allowed !important; filter: grayscale(.3); }
+
+    /* ===== Admin: Manage Site toggle rows ===== */
+    .lock-toggle-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: .7rem .9rem; border: 1px solid #E2E8F0; border-radius: .9rem;
+    }
+    .lock-toggle-row.is-locked { background: #FFFBEB; border-color: #FDE68A; }
+    .lock-switch { position: relative; width: 40px; height: 22px; border-radius: 9999px; background: #E2E8F0; cursor: pointer; transition: background .2s ease; flex-shrink: 0; }
+    .lock-switch.active { background: #DC2626; }
+    .lock-switch .knob { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .2s ease; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+    .lock-switch.active .knob { left: 20px; }
+
+    #locked-feature-toast { opacity: 0; pointer-events: none; }
   </style>
 </head>
 <body class="bg-white text-slate-900 antialiased">
@@ -136,12 +188,12 @@
           <span class="tracking-wide">AI-Powered Business Automation</span>
         </div>
         <div class="space-y-3">
-          <p class="text-slate-400 text-lg font-light italic tracking-wide">&ldquo;Stop wasting time&rdquo;</p>
-          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-slate-900">
+          <p class="text-slate-400 text-3xl sm:text-4xl font-light italic tracking-wide">&ldquo;Stop wasting time&rdquo;</p>
+          <h1 data-editable="home-heading" class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-slate-900">
             Automate your tasks by<span class="text-blue-600"> AI powered system.</span>
           </h1>
         </div>
-        <p class="text-slate-500 text-base sm:text-lg leading-relaxed max-w-xl">
+        <p data-editable="home-paragraph" class="text-slate-500 text-base sm:text-lg leading-relaxed max-w-xl">
           Your business bleeds <strong class="text-slate-700">15+ hours every week</strong> to repetitive busywork &mdash; invoices, spreadsheets, follow-ups. We architect AI workflows and conversion-ready storefronts so you can focus on what actually grows your business.
         </p>
         <div>
@@ -151,22 +203,20 @@
             <span class="group-hover:translate-x-1 transition-transform inline-block">&rarr;</span>
           </a>
         </div>
-        <!-- Book Appointment Card -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm max-w-lg hover:shadow-md transition-shadow cursor-pointer" id="book-card">
-          <div class="flex items-start gap-4">
-            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-            </div>
-            <div>
-              <p class="text-slate-700 font-semibold text-sm leading-snug">Interested? Book an appointment for free</p>
-              <p class="text-slate-400 text-xs mt-1">No commitment required. Just a conversation.</p>
-            </div>
-            <div class="ml-auto flex-shrink-0"><span class="text-blue-600 text-lg">&rarr;</span></div>
+        <!-- Book Appointment Text Link -->
+        <a href="#contact" class="flex items-start gap-3 group max-w-lg">
+          <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-blue-100 transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
           </div>
-        </div>
+          <div>
+            <p class="text-slate-700 font-semibold text-sm leading-snug group-hover:text-blue-600 transition-colors">Interested? Book an appointment for free</p>
+            <p class="text-slate-400 text-xs mt-1">No commitment required. Just a conversation.</p>
+          </div>
+          <div class="ml-auto flex-shrink-0 self-center"><span class="text-blue-600 text-lg group-hover:translate-x-1 inline-block transition-transform">&rarr;</span></div>
+        </a>
         <!-- Stats -->
         <div class="grid grid-cols-3 gap-6 pt-4 border-t border-slate-100">
           <div class="text-center">
@@ -265,13 +315,10 @@
       <!-- Text -->
       <div class="space-y-6">
         <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">The Problem</span>
-        <h2 class="text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">The Daily Grind Is Killing Your Growth.</h2>
+        <h2 data-editable="problem-heading" class="text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">The Daily Grind Is Killing Your Growth.</h2>
         <p class="text-slate-500 text-base leading-relaxed">Every morning, you wake up and immediately fall into the same cycle: chasing leads that ghosted you, updating three different spreadsheets, manually sending invoices that should have gone out days ago, and copy-pasting data between tools that don&rsquo;t talk to each other.</p>
         <p class="text-slate-500 text-base leading-relaxed">You didn&rsquo;t start a business to become a full-time data entry clerk. Yet here you are, spending <strong class="text-slate-700">15+ hours every week</strong> on tasks that add zero value to your growth.</p>
         <p class="text-slate-500 text-base leading-relaxed">This isn&rsquo;t a productivity problem. It&rsquo;s a systems problem. And systems can be fixed.</p>
-        <button id="problem-cta" class="btn-primary text-white font-semibold px-6 py-3 rounded-xl inline-flex items-center gap-2">
-          Fix My Systems <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
       </div>
     </div>
   </div>
@@ -283,7 +330,7 @@
     <div class="grid lg:grid-cols-2 gap-16 items-start">
       <div class="space-y-6">
         <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">About Us</span>
-        <h2 class="text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Built to prevent<br/><span class="text-blue-600">business burnout.</span></h2>
+        <h2 data-editable="about-heading" class="text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Built to prevent<br/><span class="text-blue-600">business burnout.</span></h2>
         <p class="text-slate-500 text-base leading-relaxed">LogiCanvas was founded after watching talented business owners &mdash; consultants, retailers, e-commerce sellers, freelancers &mdash; spend their best hours on work that machines can do better. The vision was simple: every serious business deserves the same operational leverage that Fortune 500 companies use, without the enterprise price tag.</p>
         <p class="text-slate-500 text-base leading-relaxed">We&rsquo;re not a software company. We&rsquo;re not a generic marketing agency. We are systems architects &mdash; we design, build, and deploy the invisible infrastructure that makes your business run automatically while you focus on growth.</p>
         <p class="text-slate-500 text-base leading-relaxed">Each engagement is handled with direct, personal accountability. When you work with LogiCanvas, you work with the founder &mdash; not a rotating team of contractors.</p>
@@ -326,15 +373,45 @@
   </div>
 </section>
 
+<!-- ===== CERTIFICATIONS ===== -->
+<section id="certifications" class="py-24 lg:py-32 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">Credentials</span>
+      <h2 data-editable="certifications-heading" class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Certifications &amp; Credentials</h2>
+      <p class="mt-4 text-slate-500 text-base">Tools, platforms, and programs we're certified in.</p>
+    </div>
+
+    <div id="certifications-empty" class="text-center py-12 border border-dashed border-slate-200 rounded-3xl max-w-2xl mx-auto">
+      <p class="text-slate-400 text-sm">No certifications added yet.</p>
+    </div>
+    <div id="certifications-list" class="hidden grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto"></div>
+
+    <!-- Admin-only: add a certification -->
+    <div id="cert-admin-add" class="hidden mt-10 bg-slate-50 border border-slate-200 rounded-2xl p-6 max-w-3xl mx-auto">
+      <h3 class="text-slate-800 font-bold text-sm mb-4">Add Certification (Admin)</h3>
+      <div class="grid sm:grid-cols-2 gap-3 mb-3">
+        <input type="text" id="cert-name-input" placeholder="Certification name"
+          class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <input type="text" id="cert-issuer-input" placeholder="Issuer (e.g. n8n, Google)"
+          class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <input type="url" id="cert-url-input" placeholder="Verification link https://..."
+        class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <button id="cert-add-btn" class="btn-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Add Certification</button>
+    </div>
+  </div>
+</section>
+
 <!-- ===== PORTFOLIO ===== -->
 <section id="portfolio" class="py-24 lg:py-32 bg-slate-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center max-w-2xl mx-auto mb-16">
       <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">Work</span>
-      <h2 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Recent Projects</h2>
+      <h2 data-editable="portfolio-heading" class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Recent Projects</h2>
       <p class="mt-4 text-slate-500 text-base">Automation systems and storefronts delivered to real businesses.</p>
     </div>
-    <div class="portfolio-placeholder rounded-3xl p-16 text-center max-w-3xl mx-auto">
+    <div id="portfolio-placeholder" class="portfolio-placeholder rounded-3xl p-16 text-center max-w-3xl mx-auto">
       <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round">
           <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
@@ -342,9 +419,21 @@
       </div>
       <h3 class="text-slate-700 font-bold text-xl mb-3">Portfolio Coming Soon</h3>
       <p class="text-slate-400 text-sm leading-relaxed max-w-md mx-auto mb-8">We&rsquo;re documenting our recent client work and building out detailed case studies. Check back soon or reach out directly to discuss your project needs.</p>
-      <button id="portfolio-cta" class="btn-primary text-white font-semibold px-6 py-3 rounded-xl inline-flex items-center gap-2">
-        Discuss Your Project <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
+    </div>
+    <div id="portfolio-list" class="hidden grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto"></div>
+
+    <!-- Admin-only: add a new portfolio / recent work item -->
+    <div id="portfolio-admin-add" class="hidden mt-10 bg-white border border-slate-200 rounded-2xl p-6 max-w-3xl mx-auto">
+      <h3 class="text-slate-800 font-bold text-sm mb-4">Add Portfolio Item (Admin)</h3>
+      <div class="grid sm:grid-cols-2 gap-3 mb-3">
+        <input type="text" id="pf-title-input" placeholder="Project title"
+          class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <input type="url" id="pf-link-input" placeholder="Link (optional) https://..."
+          class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <textarea id="pf-desc-input" rows="2" placeholder="Short description"
+        class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+      <button id="pf-add-btn" class="btn-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Add Item</button>
     </div>
   </div>
 </section>
@@ -354,7 +443,7 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="max-w-2xl mb-16">
       <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">Our Approach</span>
-      <h2 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Three Pillars of Complete Business Automation.</h2>
+      <h2 data-editable="pillars-heading" class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Three Pillars of Complete Business Automation.</h2>
     </div>
     <div class="grid md:grid-cols-3 gap-8">
       <div class="pillar-card bg-white border border-slate-200 rounded-3xl p-8">
@@ -404,46 +493,45 @@
       <span class="text-xs font-bold tracking-widest text-blue-400 uppercase flex items-center gap-2 mb-4">
         <span class="w-2 h-2 bg-blue-400 rounded-full inline-block"></span>Blueprints
       </span>
-      <h2 class="text-4xl sm:text-5xl font-extrabold text-white leading-tight">Pre-Engineered Blueprints.</h2>
+      <h2 data-editable="blueprints-heading" class="text-4xl sm:text-5xl font-extrabold text-white leading-tight">Pre-Engineered Blueprints.</h2>
       <p class="mt-4 text-slate-400 text-base leading-relaxed">Proven automation frameworks ready to be customized for your business model. Start faster, scale smarter.</p>
     </div>
-    <div class="grid md:grid-cols-3 gap-8">
-      <!-- Blueprint 01 -->
-      <div class="blueprint-card bg-slate-800 border border-slate-700 rounded-3xl p-8 hover:border-blue-500">
-        <div class="text-slate-600 text-5xl font-black mb-6 leading-none">01</div>
-        <h3 class="text-white font-bold text-xl mb-3">The Local Retail &amp; Service Engine</h3>
-        <p class="text-slate-400 text-sm leading-relaxed mb-6">Built for brick-and-mortar businesses and local service providers. Automates appointment booking, follow-up sequences, review collection, and inventory alerts.</p>
-        <div class="space-y-2 mb-8">
-          <div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Automated appointment reminders</div>
-          <div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Customer follow-up sequences</div>
-          <div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Review collection automation</div>
-        </div>
-        <button class="blueprint-btn w-full border border-slate-600 hover:border-blue-500 hover:bg-blue-600 text-slate-300 hover:text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200">Get this blueprint</button>
+    <div id="blueprint-list" class="grid md:grid-cols-3 gap-8"></div>
+
+    <!-- Admin-only: add a new blueprint / template -->
+    <div id="blueprint-admin-add" class="hidden mt-8 bg-slate-800 border border-slate-700 rounded-3xl p-8">
+      <h3 class="text-white font-bold text-sm mb-4">Add Blueprint / Template (Admin)</h3>
+      <div class="grid sm:grid-cols-2 gap-3 mb-3">
+        <input type="text" id="bp-title-input" placeholder="Blueprint title"
+          class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <input type="text" id="bp-features-input" placeholder="Features, comma-separated"
+          class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
-      <!-- Blueprint 02 (Popular) -->
-      <div class="blueprint-card bg-blue-600 border border-blue-500 rounded-3xl p-8 hover:border-blue-400 relative overflow-hidden">
-        <div class="absolute top-4 right-4 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">POPULAR</div>
-        <div class="text-blue-400/40 text-5xl font-black mb-6 leading-none">02</div>
-        <h3 class="text-white font-bold text-xl mb-3">The E-Commerce Scaling Model</h3>
-        <p class="text-blue-100 text-sm leading-relaxed mb-6">Designed for online stores and product businesses. Automates order processing, abandoned cart recovery, supplier notifications, and customer support routing.</p>
-        <div class="space-y-2 mb-8">
-          <div class="flex items-center gap-2 text-blue-100 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Abandoned cart recovery</div>
-          <div class="flex items-center gap-2 text-blue-100 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Order &amp; fulfillment automation</div>
-          <div class="flex items-center gap-2 text-blue-100 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Inventory &amp; supplier alerts</div>
+      <textarea id="bp-desc-input" rows="2" placeholder="Short description"
+        class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white placeholder-slate-500 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+      <button id="bp-add-btn" class="btn-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Add Blueprint</button>
+    </div>
+
+    <!-- Resource Links — visible to everyone, add/delete restricted to logged-in admins -->
+    <div id="resource-links-block" class="mt-12 bg-slate-800 border border-slate-700 rounded-3xl p-8">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
+          <h3 class="text-white font-bold text-lg mb-1">Blueprint Resource Links</h3>
+          <p class="text-slate-400 text-sm">Reference docs, templates, and downloads for these blueprints.</p>
         </div>
-        <button class="blueprint-btn w-full bg-white hover:bg-blue-50 text-blue-600 text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200">Get this blueprint</button>
       </div>
-      <!-- Blueprint 03 -->
-      <div class="blueprint-card bg-slate-800 border border-slate-700 rounded-3xl p-8 hover:border-blue-500">
-        <div class="text-slate-600 text-5xl font-black mb-6 leading-none">03</div>
-        <h3 class="text-white font-bold text-xl mb-3">The Freelancer &amp; Creator Pipeline</h3>
-        <p class="text-slate-400 text-sm leading-relaxed mb-6">Purpose-built for independent professionals and content creators. Automates lead capture, proposal delivery, contract signing, invoicing, and content scheduling.</p>
-        <div class="space-y-2 mb-8">
-          <div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Automated lead intake &amp; response</div>
-          <div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Proposal &amp; invoice automation</div>
-          <div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Content scheduling pipeline</div>
-        </div>
-        <button class="blueprint-btn w-full border border-slate-600 hover:border-blue-500 hover:bg-blue-600 text-slate-300 hover:text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all duration-200">Get this blueprint</button>
+
+      <!-- Add-link form, only shown to logged-in admins -->
+      <div id="link-add-form" class="hidden grid sm:grid-cols-[1fr_1fr_auto] gap-3 mb-6">
+        <input type="text" id="link-label-input" placeholder="Link label (e.g. n8n Docs)"
+          class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <input type="url" id="link-url-input" placeholder="https://..."
+          class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-600 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <button id="link-add-btn" class="btn-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl whitespace-nowrap">Add Link</button>
+      </div>
+
+      <div id="link-list" class="space-y-2">
+        <p id="link-list-empty" class="text-slate-500 text-sm">No resource links added yet.</p>
       </div>
     </div>
   </div>
@@ -454,42 +542,72 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center max-w-2xl mx-auto mb-16">
       <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">Social Proof</span>
-      <h2 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">What Our Clients Say</h2>
+      <h2 data-editable="testimonials-heading" class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">What Our Clients Say</h2>
     </div>
-    <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-      <div class="testimonial-card rounded-3xl p-8">
-        <div class="flex items-start gap-2 mb-6">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="#DBEAFE" class="flex-shrink-0 mt-1"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
-          <p class="text-slate-700 text-sm leading-relaxed font-medium">&ldquo;We saved 10 hours a week immediately after launch. The invoice automation alone paid for the entire project within the first month. I genuinely can&rsquo;t believe we were doing this manually before.&rdquo;</p>
-        </div>
-        <div class="flex items-center gap-3 pt-4 border-t border-slate-200">
-          <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">R</div>
-          <div><p class="text-slate-800 font-semibold text-sm">Riya S.</p><p class="text-slate-400 text-xs">Online Retail Store Owner</p></div>
-          <div class="ml-auto flex gap-0.5">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          </div>
-        </div>
+    <div id="testimonial-grid" class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div id="testimonial-empty" class="col-span-1 md:col-span-2 text-center py-12 border border-dashed border-slate-200 rounded-3xl">
+        <p class="text-slate-400 text-sm">No reviews yet &mdash; be the first to share your experience!</p>
       </div>
-      <div class="testimonial-card rounded-3xl p-8">
-        <div class="flex items-start gap-2 mb-6">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="#DBEAFE" class="flex-shrink-0 mt-1"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
-          <p class="text-slate-700 text-sm leading-relaxed font-medium">&ldquo;The n8n workflow they built for my freelance business is insane. Client onboarding that used to take 2 hours now happens in 3 minutes. My whole operation runs while I sleep. This is what leverage looks like.&rdquo;</p>
-        </div>
-        <div class="flex items-center gap-3 pt-4 border-t border-slate-200">
-          <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">A</div>
-          <div><p class="text-slate-800 font-semibold text-sm">Arjun M.</p><p class="text-slate-400 text-xs">Freelance Consultant &amp; Creator</p></div>
-          <div class="ml-auto flex gap-0.5">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#2563EB"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    </div>
+
+    <!-- Leave a Review -->
+    <div class="mt-10 max-w-4xl mx-auto">
+      <div id="review-form-unlocked" class="bg-white border border-slate-200 rounded-3xl p-8">
+        <h3 class="text-slate-900 font-bold text-lg mb-1">Leave a Review</h3>
+        <p class="text-slate-400 text-sm mb-6">Share a few details and tell us about your experience working with us.</p>
+        <form id="review-form" class="space-y-5 text-left" novalidate>
+          <div>
+            <label for="rv-name" class="block text-sm font-semibold text-slate-700 mb-1.5">Your Name</label>
+            <input type="text" id="rv-name" name="name" required placeholder="e.g. Priya K."
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+            <p class="rv-error hidden text-red-500 text-xs mt-1.5">Please enter your name.</p>
           </div>
+          <div>
+            <label for="rv-email" class="block text-sm font-semibold text-slate-700 mb-1.5">Email ID</label>
+            <input type="email" id="rv-email" name="email" required placeholder="you@company.com"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+            <p class="rv-error hidden text-red-500 text-xs mt-1.5">Please enter a valid email address.</p>
+          </div>
+          <div>
+            <label for="rv-city" class="block text-sm font-semibold text-slate-700 mb-1.5">City</label>
+            <input type="text" id="rv-city" name="city" required placeholder="e.g. New Delhi"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+            <p class="rv-error hidden text-red-500 text-xs mt-1.5">Please enter your city.</p>
+          </div>
+          <div>
+            <label for="rv-profession" class="block text-sm font-semibold text-slate-700 mb-1.5">Profession / Designation</label>
+            <input type="text" id="rv-profession" name="profession" required placeholder="e.g. Founder, Marketing Manager"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+            <p class="rv-error hidden text-red-500 text-xs mt-1.5">Please enter your profession or designation.</p>
+          </div>
+          <div>
+            <label for="rv-text" class="block text-sm font-semibold text-slate-700 mb-1.5">Your Review</label>
+            <textarea id="rv-text" name="text" rows="3" required placeholder="Tell others about your experience working with us&hellip;"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"></textarea>
+            <p class="rv-error hidden text-red-500 text-xs mt-1.5">Please write a short review.</p>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1.5">Rating</label>
+            <div id="rv-stars" class="flex gap-1.5">
+              <button type="button" data-value="1" class="rv-star-btn" aria-label="1 star"><svg width="24" height="24" viewBox="0 0 24 24" fill="#E2E8F0" class="rv-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+              <button type="button" data-value="2" class="rv-star-btn" aria-label="2 stars"><svg width="24" height="24" viewBox="0 0 24 24" fill="#E2E8F0" class="rv-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+              <button type="button" data-value="3" class="rv-star-btn" aria-label="3 stars"><svg width="24" height="24" viewBox="0 0 24 24" fill="#E2E8F0" class="rv-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+              <button type="button" data-value="4" class="rv-star-btn" aria-label="4 stars"><svg width="24" height="24" viewBox="0 0 24 24" fill="#E2E8F0" class="rv-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+              <button type="button" data-value="5" class="rv-star-btn" aria-label="5 stars"><svg width="24" height="24" viewBox="0 0 24 24" fill="#E2E8F0" class="rv-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+            </div>
+            <p class="rv-error hidden text-red-500 text-xs mt-1.5">Please select a rating.</p>
+          </div>
+          <button type="submit" id="review-submit-btn" class="btn-primary w-full text-white font-bold py-3.5 rounded-2xl text-sm">Submit Review &rarr;</button>
+        </form>
+      </div>
+
+      <div id="review-thanks" class="hidden bg-white border border-slate-200 rounded-3xl p-8 text-center">
+        <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
+        <h3 class="text-slate-900 font-extrabold text-xl mb-2">Thanks for Your Review!</h3>
+        <p class="text-slate-500 text-sm leading-relaxed mb-5">Your review has been added above for other visitors to see.</p>
+        <button id="review-again-btn" class="text-blue-600 font-semibold text-sm hover:underline">Leave another review</button>
       </div>
     </div>
   </div>
@@ -500,7 +618,7 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center max-w-2xl mx-auto mb-16">
       <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">Pricing</span>
-      <h2 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Aligned With Your Results.</h2>
+      <h2 data-editable="pricing-heading" class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Aligned With Your Results.</h2>
       <p class="mt-4 text-slate-500 text-base">No retainers. No hidden fees. Flat-fee projects aligned to your business outcomes.</p>
     </div>
     <div class="max-w-lg mx-auto">
@@ -537,44 +655,19 @@
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
       <span class="section-label text-xs font-bold tracking-widest text-blue-600 uppercase">FAQ</span>
-      <h2 class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Frequently Asked Questions</h2>
+      <h2 data-editable="faq-heading" class="mt-4 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">Frequently Asked Questions</h2>
     </div>
-    <div class="space-y-4">
-      <div class="faq-item bg-white border border-slate-200 rounded-2xl overflow-hidden">
-        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 transition-colors" aria-expanded="false">
-          <span class="text-slate-800 font-semibold text-sm pr-4">How long does setup take?</span>
-          <svg class="accordion-arrow flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="accordion-content">
-          <div class="px-6 pb-6"><p class="text-slate-500 text-sm leading-relaxed">Setup timelines depend on the scope of your project. Typically, a complete automation package takes 1&ndash;3 weeks from initial audit to launch. Simpler workflow builds can be delivered in as little as 5&ndash;7 business days. We&rsquo;ll give you a precise timeline during your free consultation call before any commitment is made.</p></div>
-        </div>
-      </div>
-      <div class="faq-item bg-white border border-slate-200 rounded-2xl overflow-hidden">
-        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 transition-colors" aria-expanded="false">
-          <span class="text-slate-800 font-semibold text-sm pr-4">Do you offer support after launch?</span>
-          <svg class="accordion-arrow flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="accordion-content">
-          <div class="px-6 pb-6"><p class="text-slate-500 text-sm leading-relaxed">Yes. Every Custom Package includes a dedicated 30-day post-launch optimization window. During this period, we monitor your systems, fix any bugs that emerge, and make adjustments based on real-world performance. After the 30 days, ongoing support can be arranged on a case-by-case basis.</p></div>
-        </div>
-      </div>
-      <div class="faq-item bg-white border border-slate-200 rounded-2xl overflow-hidden">
-        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 transition-colors" aria-expanded="false">
-          <span class="text-slate-800 font-semibold text-sm pr-4">What happens if something breaks?</span>
-          <svg class="accordion-arrow flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="accordion-content">
-          <div class="px-6 pb-6"><p class="text-slate-500 text-sm leading-relaxed">Within the 30-day support window, we fix it. After that window, most issues are straightforward to resolve &mdash; we&rsquo;ll provide you with clear documentation so your team can handle minor fixes independently. For major issues caused by third-party platform changes (like API updates from n8n, Framer, or Google), we&rsquo;ll assess and quote a fix at a fair rate.</p></div>
-        </div>
-      </div>
-      <div class="faq-item bg-white border border-slate-200 rounded-2xl overflow-hidden">
-        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 transition-colors" aria-expanded="false">
-          <span class="text-slate-800 font-semibold text-sm pr-4">Do I need any technical knowledge?</span>
-          <svg class="accordion-arrow flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="accordion-content">
-          <div class="px-6 pb-6"><p class="text-slate-500 text-sm leading-relaxed">Zero technical knowledge required. We handle everything from system design to deployment. The only thing you need to provide is access to your existing tools (we&rsquo;ll guide you through this step-by-step) and clarity on what you want to automate. If you can explain your current process in plain English, we can build the automation.</p></div>
-        </div>
+    <div id="faq-list" class="space-y-4"></div>
+
+    <!-- Admin-only: add a new FAQ -->
+    <div id="faq-admin-add" class="hidden mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-6">
+      <h3 class="text-slate-800 font-bold text-sm mb-4">Add FAQ (Admin)</h3>
+      <div class="space-y-3">
+        <input type="text" id="faq-q-input" placeholder="Question"
+          class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <textarea id="faq-a-input" rows="2" placeholder="Answer"
+          class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+        <button id="faq-add-btn" class="btn-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl">Add FAQ</button>
       </div>
     </div>
   </div>
@@ -586,11 +679,10 @@
     <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-blue-300 text-xs font-semibold px-4 py-2 rounded-full mb-8">
       <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>Available for New Projects
     </div>
-    <h2 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">Stop Trading<br/><span class="text-blue-400">Time for Money.</span></h2>
+    <h2 data-editable="contact-heading" class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">Stop Trading<br/><span class="text-blue-400">Time for Money.</span></h2>
     <p class="text-slate-400 text-lg leading-relaxed mb-10 max-w-2xl mx-auto">Every week you wait is another 15+ hours lost. Your competitors are already automating. Let&rsquo;s build systems that work while you don&rsquo;t.</p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center mb-10">
       <button id="final-cta-1" class="btn-primary text-white font-bold px-8 py-4 rounded-2xl text-base">Claim Free Appointment &rarr;</button>
-      <button id="final-cta-2" class="font-bold px-8 py-4 rounded-2xl text-base border border-white/30 text-white hover:bg-white hover:text-slate-900 transition-all duration-200">Start a Project</button>
     </div>
     <div class="flex items-center justify-center gap-3">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -611,7 +703,9 @@
           <span class="text-white font-bold">LogiCanvas</span>
         </div>
         <p class="text-slate-400 text-xs leading-relaxed mb-4">AI-powered automation systems for modern businesses. Built for growth, not busywork.</p>
-        <a href="mailto:manojnewdelhi9711@gmail.com" class="text-blue-400 text-xs hover:text-blue-300 transition-colors">manojnewdelhi9711@gmail.com</a>
+        <a href="mailto:manojnewdelhi9711@gmail.com" class="text-blue-400 text-xs hover:text-blue-300 transition-colors block mb-4">manojnewdelhi9711@gmail.com</a>
+        <div id="social-links-empty" class="text-slate-600 text-xs">No social links added yet.</div>
+        <div id="social-links-list" class="hidden flex flex-wrap gap-3"></div>
       </div>
       <div>
         <h4 class="text-white font-semibold text-sm mb-4">Navigation</h4>
@@ -637,12 +731,19 @@
       <div>
         <h4 class="text-white font-semibold text-sm mb-4">Legal &amp; Contact</h4>
         <div class="space-y-3">
-          <a href="Privacy-policy.html" class="block text-slate-400 text-xs hover:text-white transition-colors">Privacy Policy</a>
-          <a href="Terms-and-condition.html" class="block text-slate-400 text-xs hover:text-white transition-colors">Terms &amp; Conditions</a>
+          <a href="privacy-policy.html" class="block text-slate-400 text-xs hover:text-white transition-colors">Privacy Policy</a>
+          <a href="terms-and-conditions.html" class="block text-slate-400 text-xs hover:text-white transition-colors">Terms &amp; Conditions</a>
           <a href="mailto:manojnewdelhi9711@gmail.com" class="block text-slate-400 text-xs hover:text-white transition-colors">Contact Us</a>
           <a href="#contact" class="block text-slate-400 text-xs hover:text-white transition-colors">Book Appointment</a>
         </div>
       </div>
+    </div>
+    <div id="social-admin-add" class="hidden grid sm:grid-cols-[1fr_1fr_auto] gap-3 mb-8">
+      <input type="text" id="social-platform-input" placeholder="Platform (e.g. Instagram)"
+        class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <input type="url" id="social-url-input" placeholder="https://..."
+        class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <button id="social-add-btn" class="btn-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl whitespace-nowrap">Add Social Link</button>
     </div>
     <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
       <p class="text-slate-500 text-xs">&copy; 2026 LogiCanvas. All rights reserved.</p>
@@ -671,10 +772,515 @@
   </div>
 </div>
 
+<!-- ===== GET STARTED FORM MODAL ===== -->
+<div id="form-modal-overlay" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+  <div id="form-modal-box" class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative transform transition-all duration-300 scale-95 opacity-0 max-h-[90vh] overflow-y-auto">
+    <button id="form-modal-close" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <!-- Form -->
+    <div id="lead-form-wrap">
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h3 class="text-slate-900 font-extrabold text-xl mb-2">Get Started</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">Share a few details and we&rsquo;ll reach out to schedule your free consultation.</p>
+      </div>
+
+      <form id="lead-form" class="space-y-5 text-left" novalidate>
+        <div>
+          <label for="lf-email" class="block text-sm font-semibold text-slate-700 mb-1.5">Email ID</label>
+          <input type="email" id="lf-email" name="email" required
+            placeholder="you@company.com"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+          <p class="lf-error hidden text-red-500 text-xs mt-1.5">Please enter a valid email address.</p>
+        </div>
+
+        <div>
+          <label for="lf-city" class="block text-sm font-semibold text-slate-700 mb-1.5">City</label>
+          <input type="text" id="lf-city" name="city" required
+            placeholder="e.g. New Delhi"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+          <p class="lf-error hidden text-red-500 text-xs mt-1.5">Please enter your city.</p>
+        </div>
+
+        <div>
+          <label for="lf-profession" class="block text-sm font-semibold text-slate-700 mb-1.5">Profession / Designation</label>
+          <input type="text" id="lf-profession" name="profession" required
+            placeholder="e.g. Founder, Marketing Manager"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+          <p class="lf-error hidden text-red-500 text-xs mt-1.5">Please enter your profession or designation.</p>
+        </div>
+
+        <div>
+          <label class="flex items-start gap-3 cursor-pointer select-none">
+            <input type="checkbox" id="lf-agree" name="agree" required
+              class="mt-0.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 flex-shrink-0" />
+            <span class="text-sm text-slate-600 leading-snug">
+              I agree to the <a href="terms-and-conditions.html" target="_blank" class="text-blue-600 font-semibold hover:text-blue-700 underline">Terms &amp; Conditions</a>
+              and <a href="privacy-policy.html" target="_blank" class="text-blue-600 font-semibold hover:text-blue-700 underline">Privacy Policy</a>.
+            </span>
+          </label>
+          <p class="lf-error hidden text-red-500 text-xs mt-1.5 ml-7">You must agree to the Terms &amp; Conditions and Privacy Policy.</p>
+        </div>
+
+        <button type="submit" class="btn-primary w-full text-white font-bold py-3.5 rounded-2xl text-sm">
+          Submit &rarr;
+        </button>
+      </form>
+    </div>
+
+    <!-- Success state (hidden by default) -->
+    <div id="lead-form-success" class="hidden text-center py-4">
+      <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h3 class="text-slate-900 font-extrabold text-xl mb-2">Submitted Successfully!</h3>
+      <p class="text-slate-500 text-sm leading-relaxed">We will connect with you through your email. If you don&rsquo;t receive a notification, please check your spam folder.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CLAIM FREE APPOINTMENT MODAL ===== -->
+<div id="appt-modal-overlay" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+  <div id="appt-modal-box" class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 relative transform transition-all duration-300 scale-95 opacity-0 max-h-[90vh] overflow-y-auto">
+    <button id="appt-modal-close" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <!-- Form -->
+    <div id="appt-form-wrap">
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h3 class="text-slate-900 font-extrabold text-xl mb-2">Claim Your Free Appointment</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">Confirm your details and pick a date &amp; time that works for you.</p>
+      </div>
+
+      <form id="appt-form" class="space-y-5 text-left" novalidate>
+        <div class="grid sm:grid-cols-2 gap-5">
+          <div>
+            <label for="af-email" class="block text-sm font-semibold text-slate-700 mb-1.5">Email ID</label>
+            <input type="email" id="af-email" name="email" required
+              placeholder="you@company.com"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+            <p class="af-error hidden text-red-500 text-xs mt-1.5">Please enter a valid email address.</p>
+          </div>
+          <div>
+            <label for="af-city" class="block text-sm font-semibold text-slate-700 mb-1.5">City</label>
+            <input type="text" id="af-city" name="city" required
+              placeholder="e.g. New Delhi"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+            <p class="af-error hidden text-red-500 text-xs mt-1.5">Please enter your city.</p>
+          </div>
+        </div>
+
+        <div>
+          <label for="af-profession" class="block text-sm font-semibold text-slate-700 mb-1.5">Profession / Designation</label>
+          <input type="text" id="af-profession" name="profession" required
+            placeholder="e.g. Founder, Marketing Manager"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+          <p class="af-error hidden text-red-500 text-xs mt-1.5">Please enter your profession or designation.</p>
+        </div>
+
+        <div>
+          <label for="af-org" class="block text-sm font-semibold text-slate-700 mb-1.5">Organization / Firm / Business Name <span class="text-slate-400 font-normal">(optional)</span></label>
+          <input type="text" id="af-org" name="organization"
+            placeholder="e.g. Sharma Retail Pvt. Ltd."
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+        </div>
+
+        <div>
+          <label for="af-website" class="block text-sm font-semibold text-slate-700 mb-1.5">Website <span class="text-slate-400 font-normal">(optional)</span></label>
+          <input type="text" id="af-website" name="website"
+            placeholder="e.g. www.yourbusiness.com"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+        </div>
+
+        <div>
+          <label for="af-description" class="block text-sm font-semibold text-slate-700 mb-1.5">Brief Project Description <span class="text-slate-400 font-normal">(optional)</span></label>
+          <textarea id="af-description" name="description" rows="3"
+            placeholder="Tell us a little about what you'd like to automate or build&hellip;"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"></textarea>
+        </div>
+
+        <div>
+          <label for="af-date" class="block text-sm font-semibold text-slate-700 mb-1.5">Select a Date</label>
+          <input type="date" id="af-date" name="date" required
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+          <p class="af-error hidden text-red-500 text-xs mt-1.5">Please select a date.</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">Select a Time Slot</label>
+          <div id="af-time-slots" class="grid grid-cols-3 gap-2 opacity-50 pointer-events-none transition-opacity"></div>
+          <p id="af-slot-hint" class="text-slate-400 text-xs mt-1.5">Pick a date first to unlock available time slots.</p>
+          <p class="af-error hidden text-red-500 text-xs mt-1.5">Please select a time slot.</p>
+        </div>
+
+        <button type="submit" class="btn-primary w-full text-white font-bold py-3.5 rounded-2xl text-sm">
+          Confirm Appointment &rarr;
+        </button>
+      </form>
+    </div>
+
+    <!-- Success state (hidden by default) -->
+    <div id="appt-form-success" class="hidden text-center py-4">
+      <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h3 class="text-slate-900 font-extrabold text-xl mb-2">Submitted Successfully!</h3>
+      <p class="text-slate-500 text-sm leading-relaxed">We will connect with you through your email. If you don&rsquo;t receive a notification, please check your spam folder.</p>
+    </div>
+  </div>
+</div>
+
 <!-- ===== JAVASCRIPT ===== -->
 <script>
+(function () {
+  'use strict';
   const $ = sel => document.querySelector(sel);
   const $$ = sel => [...document.querySelectorAll(sel)];
+
+  const API = {
+    config: "https://manojn8nagency-n8n-agency-backend.hf.space/webhook/public/config",
+    lead: "https://manojn8nagency-n8n-agency-backend.hf.space/webhook/public/lead",
+    appointment: "https://manojn8nagency-n8n-agency-backend.hf.space/webhook/public/appointment",
+    review: "https://manojn8nagency-n8n-agency-backend.hf.space/webhook/public/review"
+  };
+  const isAdmin = false;
+
+  // ----- URL sanitizer: only allow safe schemes in any admin-supplied link -----
+  // Blocks javascript:, data:, vbscript:, etc. Anything else (including
+  // scheme-relative or relative URLs) is only allowed if it parses as
+  // http(s)/mailto/tel, otherwise it's rejected outright.
+  function sanitizeUrl(raw) {
+    const value = (raw || '').trim();
+    if (!value) return '';
+    try {
+      const url = new URL(value, window.location.href);
+      const okSchemes = ['http:', 'https:', 'mailto:', 'tel:'];
+      if (okSchemes.includes(url.protocol)) return url.href;
+    } catch (e) { /* fall through to rejection */ }
+    return '';
+  }
+
+  // ----- HTML sanitizer: used to clean up whatever "Edit Page Text" saves -----
+  // Strips script/style/iframe/object/embed tags, all on* event-handler
+  // attributes, and any href/src that isn't a safe scheme (see sanitizeUrl).
+  const DISALLOWED_TAGS = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META', 'FORM', 'BASE']);
+  function sanitizeHtml(dirtyHtml) {
+    const doc = new DOMParser().parseFromString(`<div>${dirtyHtml}</div>`, 'text/html');
+    const root = doc.body.firstChild;
+    if (!root) return '';
+
+    const walk = (node) => {
+      [...node.childNodes].forEach(child => {
+        if (child.nodeType === Node.ELEMENT_NODE) {
+          if (DISALLOWED_TAGS.has(child.tagName)) {
+            child.remove();
+            return;
+          }
+          [...child.attributes].forEach(attr => {
+            const name = attr.name.toLowerCase();
+            if (name.startsWith('on')) {
+              child.removeAttribute(attr.name);
+              return;
+            }
+            if (name === 'href' || name === 'src' || name === 'xlink:href' || name === 'formaction') {
+              const safe = sanitizeUrl(attr.value);
+              if (safe) child.setAttribute(attr.name, safe);
+              else child.removeAttribute(attr.name);
+            }
+            if (name === 'style') {
+              // Block CSS-based tricks like url() javascript: or expression()
+              if (/expression\s*\(|javascript:/i.test(attr.value)) child.removeAttribute(attr.name);
+            }
+          });
+          walk(child);
+        } else if (child.nodeType === Node.COMMENT_NODE) {
+          child.remove();
+        }
+      });
+    };
+    walk(root);
+    return root.innerHTML;
+  }
+
+  function loadJSON(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) { return fallback; }
+  }
+  function saveJSON(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* ignore storage errors */ }
+  }
+
+  let configLoaded = false;
+  async function fetchConfig() {
+    try {
+      const resp = await fetch(API.config);
+      if (!resp.ok) throw new Error('fetch failed');
+      return await resp.json();
+    } catch (e) {
+      return null;
+    }
+  }
+  async function initFromApi() {
+    const data = await fetchConfig();
+    if (!data) return;
+    if (data.faqs) { faqs.length = 0; faqs.push(...data.faqs); saveJSON('lc_faqs', faqs); }
+    if (data.portfolio) { portfolioItems.length = 0; portfolioItems.push(...data.portfolio); saveJSON('lc_portfolio', portfolioItems); }
+    if (data.blueprints) { blueprints.length = 0; blueprints.push(...data.blueprints); saveJSON('lc_blueprints', blueprints); }
+    if (data.certifications) { certifications.length = 0; certifications.push(...data.certifications); saveJSON('lc_certifications', certifications); }
+    if (data.social_links) { socialLinks.length = 0; socialLinks.push(...data.social_links); saveJSON('lc_social', socialLinks); }
+    if (data.calendar_slots) { calendarSlots.length = 0; calendarSlots.push(...data.calendar_slots); saveJSON('lc_slots', calendarSlots); }
+    if (data.reviews) { reviews.length = 0; reviews.push(...data.reviews); saveJSON('lc_reviews', reviews); }
+    if (data.editable_texts) { Object.assign(editableTexts, data.editable_texts); saveJSON('lc_editable_text', editableTexts); }
+    if (data.locked_sections) { lockedSections.length = 0; lockedSections.push(...data.locked_sections); saveJSON('lc_locked_sections', lockedSections); }
+    if (data.locked_features) { Object.assign(lockedFeatures, data.locked_features); saveJSON('lc_locked_features', lockedFeatures); }
+    configLoaded = true;
+    renderFaqs(); renderPortfolio(); renderBlueprints(); renderCertifications(); renderSocialLinks(); renderSlots(); renderReviews(); applyEditableTexts(); applySectionLocks(); applyFeatureLocks();
+  }
+
+  // Shared lead data captured from the "Get Started" form, used to prefill the appointment form
+  const leadData = { email: '', city: '', profession: '' };
+  let hasRegistered = false; // true once the Get Started form is submitted
+  let hasBooked = false;     // true once an appointment is booked
+
+  // ===== Content data (persisted in localStorage so admin edits survive reloads) =====
+  const faqs = loadJSON('lc_faqs', [
+    { q: 'How long does setup take?', a: 'Setup timelines depend on the scope of your project. Typically, a complete automation package takes 1–3 weeks from initial audit to launch. Simpler workflow builds can be delivered in as little as 5–7 business days. We\u2019ll give you a precise timeline during your free consultation call before any commitment is made.' },
+    { q: 'Do you offer support after launch?', a: 'Yes. Every Custom Package includes a dedicated 30-day post-launch optimization window. During this period, we monitor your systems, fix any bugs that emerge, and make adjustments based on real-world performance. After the 30 days, ongoing support can be arranged on a case-by-case basis.' },
+    { q: 'What happens if something breaks?', a: 'Within the 30-day support window, we fix it. After that window, most issues are straightforward to resolve — we\u2019ll provide you with clear documentation so your team can handle minor fixes independently. For major issues caused by third-party platform changes (like API updates from n8n, Framer, or Google), we\u2019ll assess and quote a fix at a fair rate.' },
+    { q: 'Do I need any technical knowledge?', a: 'Zero technical knowledge required. We handle everything from system design to deployment. The only thing you need to provide is access to your existing tools (we\u2019ll guide you through this step-by-step) and clarity on what you want to automate. If you can explain your current process in plain English, we can build the automation.' },
+    { q: 'How much does a project cost?', a: 'Every engagement is a flat-fee project, not a retainer, and the exact price depends on the scope of what you need automated or built. We don\u2019t quote a number until we understand your workflows, which is why the free consultation call comes first. You\u2019ll get a clear, itemized quote with no hidden fees before you commit to anything.' },
+    { q: 'Do I own the workflows, code, and designs after the project?', a: 'Yes, completely. Every Custom Automation & Design Package includes a full code and asset ownership transfer once the project is delivered. That means your n8n workflows, storefront or landing page, and brand assets belong to you — there\u2019s no vendor lock-in and no recurring license fees to keep using what we build.' },
+    { q: 'What tools and platforms do you build with?', a: 'Automation workflows are primarily built in n8n, giving you a flexible, self-hostable backbone that connects the tools you already use. Storefronts and landing pages are typically designed and deployed in Framer for fast, conversion-focused sites. If your business runs on different tools, we\u2019ll discuss the best fit during your consultation.' },
+    { q: 'What\u2019s the difference between a Blueprint and a fully custom build?', a: 'Blueprints are proven automation frameworks built for common business models — local retail & service, e-commerce, and freelance & creator businesses. They give us a faster, lower-cost starting point that we then tailor to your specific tools and processes. A fully custom build starts from a blank slate and is best if your operations don\u2019t map cleanly to one of the existing Blueprints.' },
+    { q: 'Is LogiCanvas a registered company?', a: 'LogiCanvas operates as an independent freelance service, not a registered company or agency. That\u2019s intentional — it means you work directly with the founder on every project, with no account managers or rotating contractors in between. Contract terms, invoicing, and payment details are all handled directly and clearly before any work begins.' },
+    { q: 'Can I see examples of past work?', a: 'Detailed case studies are currently being put together and will appear in the Portfolio section soon. In the meantime, feel free to ask for references or a walkthrough of relevant past projects during your free consultation call.' }
+  ]);
+
+  const portfolioItems = loadJSON('lc_portfolio', []);
+
+  const blueprints = loadJSON('lc_blueprints', [
+    { title: 'The Local Retail & Service Engine', desc: 'Built for brick-and-mortar businesses and local service providers. Automates appointment booking, follow-up sequences, review collection, and inventory alerts.', features: ['Automated appointment reminders', 'Customer follow-up sequences', 'Review collection automation'] },
+    { title: 'The E-Commerce Scaling Model', desc: 'Designed for online stores and product businesses. Automates order processing, abandoned cart recovery, supplier notifications, and customer support routing.', features: ['Abandoned cart recovery', 'Order & fulfillment automation', 'Inventory & supplier alerts'] },
+    { title: 'The Freelancer & Creator Pipeline', desc: 'Purpose-built for independent professionals and content creators. Automates lead capture, proposal delivery, contract signing, invoicing, and content scheduling.', features: ['Automated lead intake & response', 'Proposal & invoice automation', 'Content scheduling pipeline'] }
+  ]);
+
+  const calendarSlots = loadJSON('lc_slots', ['10:00 AM', '11:00 AM', '12:00 PM', '2:00 PM', '3:00 PM', '4:00 PM']);
+
+  const certifications = loadJSON('lc_certifications', []);
+  const socialLinks = loadJSON('lc_social', []);
+
+  // =====================================================================
+  // INTERNAL USER DASHBOARD (admin-only reference data)
+  // Every time someone submits the "Get Started" or "Book Appointment"
+  // form, we keep a small internal record — email, city, and an internal
+  // reference ID — so the same visitor is recognized on a later visit
+  // instead of creating a duplicate record. This data is only ever
+  // rendered inside the admin dashboard (see renderDashboard below); it
+  // is never written into any element a regular visitor's page renders.
+  //
+  // HONEST LIMITATION: this is still a static site with no server. The
+  // raw record list below is necessarily sitting in this browser's
+  // localStorage the same way every other piece of admin content is —
+  // anyone who opens DevTools and runs
+  //   localStorage.getItem('lc_registered_users')
+  // can read it, regardless of whether they're logged in as admin or
+  // what the login screen looks like. Keeping it out of the rendered
+  // page (as done here) stops a casual visitor from ever seeing it, but
+  // it is not a substitute for real, server-side-only storage. If this
+  // needs to be genuinely confidential, it has to live in a backend
+  // database that the browser never receives a copy of.
+  // =====================================================================
+  const registeredUsers = loadJSON('lc_registered_users', []);
+
+  // Internal ID format: DDMMYYYYHHMMSS (day, month, year, hour, minute, second)
+  function formatInternalId(date) {
+    const p2 = n => String(n).padStart(2, '0');
+    return `${p2(date.getDate())}${p2(date.getMonth() + 1)}${date.getFullYear()}${p2(date.getHours())}${p2(date.getMinutes())}${p2(date.getSeconds())}`;
+  }
+
+  // Looks up a visitor by email; creates a new internal ID the first time,
+  // reuses the same one on every later visit/submission from that email.
+  function registerOrUpdateUser(email, city) {
+    const normalized = (email || '').trim().toLowerCase();
+    if (!normalized) return null;
+    const nowDate = new Date();
+    const nowIso = nowDate.toISOString();
+    let record = registeredUsers.find(u => u.email === normalized);
+    if (record) {
+      record.lastSeen = nowIso;
+      if (city) record.city = clampText(city, MAX_SHORT);
+    } else {
+      let internalId = formatInternalId(nowDate);
+      // Guard against two records landing in the same second (rare, but
+      // the format only has 1-second resolution).
+      let bump = 1;
+      while (registeredUsers.some(u => u.internalId === internalId)) {
+        internalId = formatInternalId(new Date(nowDate.getTime() + bump * 1000));
+        bump += 1;
+      }
+      record = {
+        email: normalized,
+        city: clampText(city || '', MAX_SHORT),
+        internalId,
+        firstSeen: nowIso,
+        lastSeen: nowIso
+      };
+      registeredUsers.push(record);
+    }
+    saveJSON('lc_registered_users', registeredUsers);
+    return record;
+  }
+
+  // =====================================================================
+  // APPOINTMENT REQUESTS (admin-only reference data)
+  // Every time someone submits the "Book Appointment" form, we keep a
+  // full record of their details plus the date & time slot they picked.
+  // Unlike registeredUsers (one row per visitor, updated on each visit),
+  // every appointment submission gets its own row here, since the same
+  // person may book more than one appointment. This is only ever
+  // rendered inside the admin "Appointment Requests" dashboard — never
+  // written into any element a regular visitor's page renders. Same
+  // honest limitation as registeredUsers above: it lives in this
+  // browser's localStorage, not a real backend.
+  // =====================================================================
+  const appointmentRequests = loadJSON('lc_appointments', []);
+
+  function saveAppointmentRequest(data) {
+    const nowDate = new Date();
+    const nowIso = nowDate.toISOString();
+    let internalId = formatInternalId(nowDate);
+    let bump = 1;
+    while (appointmentRequests.some(a => a.internalId === internalId)) {
+      internalId = formatInternalId(new Date(nowDate.getTime() + bump * 1000));
+      bump += 1;
+    }
+    const record = {
+      internalId,
+      email: (data.email || '').trim().toLowerCase(),
+      city: clampText(data.city || '', MAX_SHORT),
+      profession: clampText(data.profession || '', MAX_SHORT),
+      organization: clampText(data.organization || '', MAX_SHORT),
+      website: clampText(data.website || '', MAX_SHORT),
+      description: clampText(data.description || '', MAX_LONG),
+      date: data.date || '',
+      timeSlot: data.timeSlot || '',
+      submittedAt: nowIso
+    };
+    appointmentRequests.push(record);
+    saveJSON('lc_appointments', appointmentRequests);
+    return record;
+  }
+
+  // ===== Emergency controls: lock whole sections or specific buttons/features =====
+  const LOCKABLE_SECTIONS = [
+    { id: 'home', label: 'Hero' },
+    { id: 'problem', label: 'Our Belief' },
+    { id: 'about', label: 'About Us' },
+    { id: 'certifications', label: 'Certifications' },
+    { id: 'portfolio', label: 'Portfolio' },
+    { id: 'pillars', label: 'Three Pillars' },
+    { id: 'blueprints', label: 'Blueprints' },
+    { id: 'testimonials', label: 'Reviews' },
+    { id: 'pricing', label: 'Pricing' },
+    { id: 'faq', label: 'FAQ' },
+    { id: 'contact', label: 'Final CTA' }
+  ];
+  const LOCKABLE_FEATURES = [
+    { id: 'get_started', label: 'Get Started (registration button)', selectors: ['#nav-cta', '#mobile-cta'] },
+    { id: 'book_appointment', label: 'Book Appointment button', selectors: ['#pricing-cta', '#final-cta-1'] },
+    { id: 'leave_review', label: 'Leave a Review (submit button)', selectors: ['#review-submit-btn'] },
+    { id: 'resource_links', label: 'Blueprint resource links', selectors: [], container: '#resource-links-block' }
+  ];
+  const lockedSections = loadJSON('lc_locked_sections', []);
+  const lockedFeatures = loadJSON('lc_locked_features', {});
+
+  // In-memory + persisted store of reviews submitted during this session
+  const reviews = loadJSON('lc_reviews', []);
+  const AVATAR_GRADIENTS = [
+    'from-blue-400 to-blue-600',
+    'from-purple-400 to-purple-600',
+    'from-emerald-400 to-emerald-600',
+    'from-amber-400 to-amber-600',
+    'from-rose-400 to-rose-600',
+    'from-cyan-400 to-cyan-600'
+  ];
+  const STAR_PATH = 'M12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2';
+  function starSvg(filled, size) {
+    const color = filled ? '#2563EB' : '#E2E8F0';
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${color}"><polygon points="${STAR_PATH}"/></svg>`;
+  }
+  function starsMarkup(rating, size) {
+    let out = '';
+    for (let i = 1; i <= 5; i++) out += starSvg(i <= rating, size);
+    return out;
+  }
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+  // Basic abuse-prevention cap: keeps a single admin-entered field from
+  // bloating localStorage or breaking layout with unbounded text.
+  function clampText(str, max) {
+    const value = (str || '').toString();
+    return value.length > max ? value.slice(0, max) : value;
+  }
+  const MAX_SHORT = 150;   // titles, names, labels
+  const MAX_LONG = 1000;   // descriptions, blueprint text
+
+  function renderReviews() {
+    const grid = $('#testimonial-grid');
+    const empty = $('#testimonial-empty');
+    if (reviews.length === 0) {
+      if (empty) empty.classList.remove('hidden');
+      return;
+    }
+    if (empty) empty.classList.add('hidden');
+    // Remove any previously rendered review cards, keep the empty-state node around (hidden)
+    [...grid.querySelectorAll('.testimonial-card')].forEach(el => el.remove());
+    reviews.slice().reverse().forEach((r, idx) => {
+      const gradient = AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length];
+      const initial = r.name.trim().charAt(0).toUpperCase() || '?';
+      const card = document.createElement('div');
+      card.className = 'testimonial-card rounded-3xl p-8 relative';
+      const realIndex = reviews.length - 1 - idx;
+      card.innerHTML = `
+        ${isAdmin ? `<button class="review-delete-btn absolute top-5 right-5 text-slate-300 hover:text-red-500 transition-colors" data-index="${realIndex}" aria-label="Delete review" title="Delete review">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>` : ''}
+        <div class="flex items-start gap-2 mb-6 pr-6">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="#DBEAFE" class="flex-shrink-0 mt-1"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+          <p class="text-slate-700 text-sm leading-relaxed font-medium">&ldquo;${escapeHtml(r.text)}&rdquo;</p>
+        </div>
+        <div class="flex items-center gap-3 pt-4 border-t border-slate-200">
+          <div class="w-10 h-10 bg-gradient-to-br ${gradient} rounded-full flex items-center justify-center text-white font-bold text-sm">${escapeHtml(initial)}</div>
+          <div><p class="text-slate-800 font-semibold text-sm">${escapeHtml(r.name)}</p><p class="text-slate-400 text-xs">${escapeHtml(r.profession || 'Verified Client')}</p></div>
+          <div class="ml-auto flex gap-0.5">${starsMarkup(r.rating, 14)}</div>
+        </div>`;
+      grid.appendChild(card);
+    });
+  }
+  renderReviews();
+
+  // Delete a review (delegated so it works for every rendered card)
+  $('#testimonial-grid').addEventListener('click', e => {
+    const btn = e.target.closest('.review-delete-btn');
+    if (!btn || !isAdmin) return;
+    const idx = Number(btn.dataset.index);
+    reviews.splice(idx, 1);
+    saveJSON('lc_reviews', reviews);
+    renderReviews();
+  });
 
   // Smooth scroll
   $$('a[href^="#"]').forEach(link => {
@@ -697,42 +1303,780 @@
   });
   document.addEventListener('click', e => { if (!nb.contains(e.target)) closeMobileMenu(); });
 
-  // FAQ Accordions
-  $$('.faq-trigger').forEach(tr => {
-    tr.addEventListener('click', () => {
-      const item = tr.closest('.faq-item');
-      const content = item.querySelector('.accordion-content');
-      const arrow = tr.querySelector('.accordion-arrow');
-      const isOpen = content.classList.contains('open');
-      $$('.accordion-content').forEach(c => c.classList.remove('open'));
-      $$('.accordion-arrow').forEach(a => a.classList.remove('open'));
-      $$('.faq-trigger').forEach(t => t.setAttribute('aria-expanded', 'false'));
-      $$('.faq-item').forEach(i => i.style.borderColor = '');
-      if (!isOpen) { content.classList.add('open'); arrow.classList.add('open'); tr.setAttribute('aria-expanded', 'true'); item.style.borderColor = '#2563EB'; }
-    });
+  // ===== FAQs (dynamic, admin add/delete) =====
+  function renderFaqs() {
+    const wrap = $('#faq-list');
+    if (!wrap) return;
+    wrap.innerHTML = faqs.map((f, i) => `
+      <div class="faq-item bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between p-6 text-left hover:bg-slate-50 transition-colors" aria-expanded="false">
+          <span class="text-slate-800 font-semibold text-sm pr-4">${escapeHtml(f.q)}</span>
+          <span class="flex items-center gap-2 flex-shrink-0">
+            ${isAdmin ? `<span class="faq-delete-btn text-slate-300 hover:text-red-500 transition-colors" data-index="${i}" title="Delete FAQ"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>` : ''}
+            <svg class="accordion-arrow flex-shrink-0 w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </span>
+        </button>
+        <div class="accordion-content">
+          <div class="px-6 pb-6"><p class="text-slate-500 text-sm leading-relaxed">${escapeHtml(f.a)}</p></div>
+        </div>
+      </div>`).join('');
+  }
+  renderFaqs();
+
+  // Accordion open/close + admin delete, delegated so it works for dynamically rendered items
+  $('#faq-list').addEventListener('click', e => {
+    const delBtn = e.target.closest('.faq-delete-btn');
+    if (delBtn) {
+      if (!isAdmin) return;
+      faqs.splice(Number(delBtn.dataset.index), 1);
+      saveJSON('lc_faqs', faqs);
+      renderFaqs();
+      return;
+    }
+    const tr = e.target.closest('.faq-trigger');
+    if (!tr) return;
+    const item = tr.closest('.faq-item');
+    const content = item.querySelector('.accordion-content');
+    const arrow = tr.querySelector('.accordion-arrow');
+    const isOpen = content.classList.contains('open');
+    $$('.accordion-content').forEach(c => c.classList.remove('open'));
+    $$('.accordion-arrow').forEach(a => a.classList.remove('open'));
+    $$('.faq-trigger').forEach(t => t.setAttribute('aria-expanded', 'false'));
+    $$('.faq-item').forEach(i => i.style.borderColor = '');
+    if (!isOpen) { content.classList.add('open'); arrow.classList.add('open'); tr.setAttribute('aria-expanded', 'true'); item.style.borderColor = '#2563EB'; }
   });
+
+  const faqAddBtn = $('#faq-add-btn');
+  if (faqAddBtn) {
+    faqAddBtn.addEventListener('click', () => {
+      if (!isAdmin) return;
+      const q = clampText($('#faq-q-input').value.trim(), MAX_SHORT);
+      const a = clampText($('#faq-a-input').value.trim(), MAX_LONG);
+      if (!q || !a) return;
+      faqs.push({ q, a });
+      saveJSON('lc_faqs', faqs);
+      $('#faq-q-input').value = '';
+      $('#faq-a-input').value = '';
+      renderFaqs();
+    });
+  }
+
+  // ===== Portfolio / Recent Work (dynamic, admin add/delete) =====
+  function renderPortfolio() {
+    const list = $('#portfolio-list');
+    const placeholder = $('#portfolio-placeholder');
+    if (!list) return;
+    if (portfolioItems.length === 0) {
+      list.classList.add('hidden');
+      list.innerHTML = '';
+      if (placeholder) placeholder.classList.remove('hidden');
+      return;
+    }
+    if (placeholder) placeholder.classList.add('hidden');
+    list.classList.remove('hidden');
+    list.innerHTML = portfolioItems.map((p, i) => `
+      <div class="bg-white border border-slate-200 rounded-3xl p-6 relative">
+        ${isAdmin ? `<button class="pf-delete-btn absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors" data-index="${i}" title="Delete item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>` : ''}
+        <h3 class="text-slate-900 font-bold text-lg mb-2 pr-6">${escapeHtml(p.title)}</h3>
+        <p class="text-slate-500 text-sm leading-relaxed mb-4">${escapeHtml(p.desc || '')}</p>
+        ${p.link && sanitizeUrl(p.link) ? `<a href="${sanitizeUrl(p.link)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 text-sm font-semibold hover:underline">View Project &rarr;</a>` : ''}
+      </div>`).join('');
+  }
+  renderPortfolio();
+
+  $('#portfolio-list').addEventListener('click', e => {
+    const btn = e.target.closest('.pf-delete-btn');
+    if (!btn || !isAdmin) return;
+    portfolioItems.splice(Number(btn.dataset.index), 1);
+    saveJSON('lc_portfolio', portfolioItems);
+    renderPortfolio();
+  });
+
+  const pfAddBtn = $('#pf-add-btn');
+  if (pfAddBtn) {
+    pfAddBtn.addEventListener('click', () => {
+      if (!isAdmin) return;
+      const title = clampText($('#pf-title-input').value.trim(), MAX_SHORT);
+      const desc = clampText($('#pf-desc-input').value.trim(), MAX_LONG);
+      const linkRaw = $('#pf-link-input').value.trim();
+      const link = linkRaw ? sanitizeUrl(linkRaw) : '';
+      if (!title) return;
+      if (linkRaw && !link) { alert('Please enter a valid http(s) link.'); return; }
+      portfolioItems.push({ title, desc, link });
+      saveJSON('lc_portfolio', portfolioItems);
+      $('#pf-title-input').value = '';
+      $('#pf-desc-input').value = '';
+      $('#pf-link-input').value = '';
+      renderPortfolio();
+    });
+  }
+
+  // ===== Certifications (dynamic, admin add/delete) =====
+  function renderCertifications() {
+    const empty = $('#certifications-empty');
+    const list = $('#certifications-list');
+    if (!list) return;
+    if (certifications.length === 0) {
+      list.classList.add('hidden');
+      list.innerHTML = '';
+      if (empty) empty.classList.remove('hidden');
+      return;
+    }
+    if (empty) empty.classList.add('hidden');
+    list.classList.remove('hidden');
+    list.innerHTML = certifications.map((c, i) => `
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 relative">
+        ${isAdmin ? `<button class="cert-delete-btn absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors" data-index="${i}" title="Delete certification"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>` : ''}
+        <h3 class="text-slate-900 font-bold text-base mb-1 pr-6">${escapeHtml(c.name)}</h3>
+        ${c.issuer ? `<p class="text-slate-400 text-xs mb-3">${escapeHtml(c.issuer)}</p>` : ''}
+        ${c.url && sanitizeUrl(c.url) ? `<a href="${sanitizeUrl(c.url)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 text-xs font-semibold hover:underline">Verify &rarr;</a>` : ''}
+      </div>`).join('');
+  }
+  renderCertifications();
+
+  $('#certifications-list').addEventListener('click', e => {
+    const btn = e.target.closest('.cert-delete-btn');
+    if (!btn || !isAdmin) return;
+    certifications.splice(Number(btn.dataset.index), 1);
+    saveJSON('lc_certifications', certifications);
+    renderCertifications();
+  });
+
+  const certAddBtn = $('#cert-add-btn');
+  if (certAddBtn) {
+    certAddBtn.addEventListener('click', () => {
+      if (!isAdmin) return;
+      const name = clampText($('#cert-name-input').value.trim(), MAX_SHORT);
+      const issuer = clampText($('#cert-issuer-input').value.trim(), MAX_SHORT);
+      const urlRaw = $('#cert-url-input').value.trim();
+      const url = urlRaw ? sanitizeUrl(urlRaw) : '';
+      if (!name) return;
+      if (urlRaw && !url) { alert('Please enter a valid http(s) link.'); return; }
+      certifications.push({ name, issuer, url });
+      saveJSON('lc_certifications', certifications);
+      $('#cert-name-input').value = '';
+      $('#cert-issuer-input').value = '';
+      $('#cert-url-input').value = '';
+      renderCertifications();
+    });
+  }
+
+  // ===== Social Links (dynamic, admin add/delete) =====
+  function renderSocialLinks() {
+    const empty = $('#social-links-empty');
+    const list = $('#social-links-list');
+    if (!list) return;
+    if (socialLinks.length === 0) {
+      list.classList.add('hidden');
+      list.innerHTML = '';
+      if (empty) empty.classList.remove('hidden');
+      return;
+    }
+    if (empty) empty.classList.add('hidden');
+    list.classList.remove('hidden');
+    list.innerHTML = socialLinks.map((s, i) => `
+      <span class="inline-flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-full pl-3 pr-2 py-1.5">
+        <a href="${sanitizeUrl(s.url)}" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-blue-400 text-xs font-medium transition-colors">${escapeHtml(s.platform)}</a>
+        ${isAdmin ? `<button class="social-delete-btn text-slate-500 hover:text-red-400 transition-colors" data-index="${i}" title="Delete social link"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>` : ''}
+      </span>`).join('');
+  }
+  renderSocialLinks();
+
+  $('#social-links-list').addEventListener('click', e => {
+    const btn = e.target.closest('.social-delete-btn');
+    if (!btn || !isAdmin) return;
+    socialLinks.splice(Number(btn.dataset.index), 1);
+    saveJSON('lc_social', socialLinks);
+    renderSocialLinks();
+  });
+
+  const socialAddBtn = $('#social-add-btn');
+  if (socialAddBtn) {
+    socialAddBtn.addEventListener('click', () => {
+      if (!isAdmin) return;
+      const platform = clampText($('#social-platform-input').value.trim(), MAX_SHORT);
+      const urlRaw = $('#social-url-input').value.trim();
+      const url = sanitizeUrl(urlRaw);
+      if (!platform || !urlRaw) return;
+      if (!url) { alert('Please enter a valid http(s) link.'); return; }
+      socialLinks.push({ platform, url });
+      saveJSON('lc_social', socialLinks);
+      $('#social-platform-input').value = '';
+      $('#social-url-input').value = '';
+      renderSocialLinks();
+    });
+  }
+
+  // ===== Blueprints / Templates (dynamic, admin add/delete) =====
+  function renderBlueprints() {
+    const wrap = $('#blueprint-list');
+    if (!wrap) return;
+    wrap.innerHTML = blueprints.map((bp, i) => `
+      <div class="blueprint-card bg-slate-800 border border-slate-700 rounded-3xl p-8 hover:border-blue-500 relative">
+        ${isAdmin ? `<button class="bp-delete-btn absolute top-4 right-4 text-slate-500 hover:text-red-400 transition-colors" data-index="${i}" title="Delete blueprint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>` : ''}
+        <div class="text-slate-600 text-5xl font-black mb-6 leading-none">${String(i + 1).padStart(2, '0')}</div>
+        <h3 class="text-white font-bold text-xl mb-3 pr-6">${escapeHtml(bp.title)}</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-6">${escapeHtml(bp.desc)}</p>
+        <div class="space-y-2 mb-2">
+          ${(bp.features || []).map(f => `<div class="flex items-center gap-2 text-slate-300 text-xs"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>${escapeHtml(f)}</div>`).join('')}
+        </div>
+      </div>`).join('');
+  }
+  renderBlueprints();
+
+  $('#blueprint-list').addEventListener('click', e => {
+    const btn = e.target.closest('.bp-delete-btn');
+    if (!btn || !isAdmin) return;
+    blueprints.splice(Number(btn.dataset.index), 1);
+    saveJSON('lc_blueprints', blueprints);
+    renderBlueprints();
+  });
+
+  const bpAddBtn = $('#bp-add-btn');
+  if (bpAddBtn) {
+    bpAddBtn.addEventListener('click', () => {
+      if (!isAdmin) return;
+      const title = clampText($('#bp-title-input').value.trim(), MAX_SHORT);
+      const desc = clampText($('#bp-desc-input').value.trim(), MAX_LONG);
+      const featuresRaw = $('#bp-features-input').value.trim();
+      if (!title || !desc) return;
+      const features = featuresRaw ? featuresRaw.split(',').map(s => clampText(s.trim(), MAX_SHORT)).filter(Boolean).slice(0, 12) : [];
+      blueprints.push({ title, desc, features });
+      saveJSON('lc_blueprints', blueprints);
+      $('#bp-title-input').value = '';
+      $('#bp-desc-input').value = '';
+      $('#bp-features-input').value = '';
+      renderBlueprints();
+    });
+  }
 
   // Modal
   const mo = $('#modal-overlay'), mb = $('#modal-box');
   function openModal() { mo.classList.remove('hidden'); requestAnimationFrame(() => { mb.classList.remove('scale-95', 'opacity-0'); mb.classList.add('scale-100', 'opacity-100'); }); document.body.style.overflow = 'hidden'; }
   function closeModal() { mb.classList.add('scale-95', 'opacity-0'); mb.classList.remove('scale-100', 'opacity-100'); setTimeout(() => { mo.classList.add('hidden'); document.body.style.overflow = ''; }, 250); }
 
-  ['#nav-cta', '#book-card', '#problem-cta', '#portfolio-cta', '#pricing-cta', '#final-cta-1', '#final-cta-2', '#mobile-cta'].forEach(s => {
-    const el = $(s); if (el) el.addEventListener('click', openModal);
+  ['#pricing-cta'].forEach(s => {
+    const el = $(s); if (el) el.addEventListener('click', openAppointmentModal);
   });
   $('#modal-close').addEventListener('click', closeModal);
   mo.addEventListener('click', e => { if (e.target === mo) closeModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-  // Blueprint buttons
-  $$('.blueprint-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const t = btn.closest('.blueprint-card')?.querySelector('h3')?.textContent || 'Blueprint';
-      if (confirm(`Interested in "${t}"?\n\nClick OK to email us and we'll send you the details.`)) {
-        window.location.href = `mailto:manojnewdelhi9711@gmail.com?subject=Blueprint%20Request%3A%20${encodeURIComponent(t)}&body=Hi%20Manoj%2C%0A%0AI%27m%20interested%20in%20the%20${encodeURIComponent(t)}%20blueprint.`;
+  // Get Started form modal
+  const fmo = $('#form-modal-overlay'), fmb = $('#form-modal-box');
+  function openFormModal() {
+    if (lockedFeatures['get_started'] && !isAdmin) { showLockedFeatureToast(); return; }
+    fmo.classList.remove('hidden');
+    requestAnimationFrame(() => { fmb.classList.remove('scale-95', 'opacity-0'); fmb.classList.add('scale-100', 'opacity-100'); });
+    document.body.style.overflow = 'hidden';
+  }
+  function closeFormModal() {
+    fmb.classList.add('scale-95', 'opacity-0'); fmb.classList.remove('scale-100', 'opacity-100');
+    setTimeout(() => { fmo.classList.add('hidden'); document.body.style.overflow = ''; }, 250);
+  }
+  ['#nav-cta', '#mobile-cta'].forEach(s => {
+    const el = $(s); if (el) el.addEventListener('click', openFormModal);
+  });
+  $('#form-modal-close').addEventListener('click', closeFormModal);
+  fmo.addEventListener('click', e => { if (e.target === fmo) closeFormModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !fmo.classList.contains('hidden')) closeFormModal(); });
+
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
+  // Lead form (email, city, profession, agree checkbox)
+  const leadForm = $('#lead-form');
+  if (leadForm) {
+    const leadFormWrap = $('#lead-form-wrap');
+    const successBox = $('#lead-form-success');
+    const emailInput = $('#lf-email');
+    const cityInput = $('#lf-city');
+    const professionInput = $('#lf-profession');
+    const agreeInput = $('#lf-agree');
+
+    function setFieldError(input, hasError) {
+      const wrapper = input.closest('div');
+      const errorMsg = wrapper.querySelector('.lf-error');
+      if (hasError) {
+        input.classList.add('border-red-400');
+        input.classList.remove('border-slate-200');
+        if (errorMsg) errorMsg.classList.remove('hidden');
+      } else {
+        input.classList.remove('border-red-400');
+        input.classList.add('border-slate-200');
+        if (errorMsg) errorMsg.classList.add('hidden');
+      }
+    }
+
+    leadForm.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const emailValid = isValidEmail(emailInput.value.trim());
+      const cityValid = cityInput.value.trim().length > 0;
+      const professionValid = professionInput.value.trim().length > 0;
+      const agreeValid = agreeInput.checked;
+
+      setFieldError(emailInput, !emailValid);
+      setFieldError(cityInput, !cityValid);
+      setFieldError(professionInput, !professionValid);
+      const agreeErrorMsg = agreeInput.closest('div').querySelector('.lf-error');
+      if (agreeErrorMsg) agreeErrorMsg.classList.toggle('hidden', agreeValid);
+
+      if (!emailValid || !cityValid || !professionValid || !agreeValid) {
+        return;
+      }
+
+      // All valid — capture data for reuse, then submit to API
+      leadData.email = emailInput.value.trim();
+      leadData.city = cityInput.value.trim();
+      leadData.profession = professionInput.value.trim();
+      registerOrUpdateUser(leadData.email, leadData.city);
+      (async () => {
+        try { await fetch(API.lead, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: leadData.email, city: leadData.city, profession: leadData.profession }) }); } catch (e) { /* localStorage fallback already done */ }
+      })();
+      leadFormWrap.classList.add('hidden');
+      successBox.classList.remove('hidden');
+      hasRegistered = true;
+    });
+
+    // Clear individual field errors as the user corrects them
+    [emailInput, cityInput, professionInput].forEach(input => {
+      input.addEventListener('input', () => setFieldError(input, false));
+    });
+    agreeInput.addEventListener('change', () => {
+      const errorMsg = agreeInput.closest('div').querySelector('.lf-error');
+      if (agreeInput.checked && errorMsg) errorMsg.classList.add('hidden');
+    });
+
+    // Reset form back to its initial state whenever the modal is closed
+    function resetLeadForm() {
+      leadForm.reset();
+      leadFormWrap.classList.remove('hidden');
+      successBox.classList.add('hidden');
+      [emailInput, cityInput, professionInput].forEach(input => setFieldError(input, false));
+      const agreeErrorMsg = agreeInput.closest('div').querySelector('.lf-error');
+      if (agreeErrorMsg) agreeErrorMsg.classList.add('hidden');
+    }
+    $('#form-modal-close').addEventListener('click', resetLeadForm);
+    fmo.addEventListener('click', e => { if (e.target === fmo) resetLeadForm(); });
+  }
+
+  // Claim Free Appointment modal
+  const amo = $('#appt-modal-overlay'), amb = $('#appt-modal-box');
+  const apptForm = $('#appt-form');
+  const apptFormWrap = $('#appt-form-wrap');
+  const apptSuccessBox = $('#appt-form-success');
+  const afEmail = $('#af-email'), afCity = $('#af-city'), afProfession = $('#af-profession');
+  const afOrg = $('#af-org'), afWebsite = $('#af-website'), afDescription = $('#af-description');
+  const afDate = $('#af-date'), afSlotsWrap = $('#af-time-slots'), afSlotHint = $('#af-slot-hint');
+  let selectedTimeSlot = null;
+
+  function openAppointmentModal() {
+    // Prefill from whatever was captured in the Get Started form, if any
+    if (leadData.email) afEmail.value = leadData.email;
+    if (leadData.city) afCity.value = leadData.city;
+    if (leadData.profession) afProfession.value = leadData.profession;
+
+    amo.classList.remove('hidden');
+    requestAnimationFrame(() => { amb.classList.remove('scale-95', 'opacity-0'); amb.classList.add('scale-100', 'opacity-100'); });
+    document.body.style.overflow = 'hidden';
+  }
+  function closeAppointmentModal() {
+    amb.classList.add('scale-95', 'opacity-0'); amb.classList.remove('scale-100', 'opacity-100');
+    setTimeout(() => { amo.classList.add('hidden'); document.body.style.overflow = ''; }, 250);
+  }
+
+  const finalCta1 = $('#final-cta-1');
+  if (finalCta1) finalCta1.addEventListener('click', openAppointmentModal);
+  $('#appt-modal-close').addEventListener('click', closeAppointmentModal);
+  amo.addEventListener('click', e => { if (e.target === amo) closeAppointmentModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !amo.classList.contains('hidden')) closeAppointmentModal(); });
+
+  // Restrict date picker to today or later
+  const todayStr = new Date().toISOString().split('T')[0];
+  afDate.setAttribute('min', todayStr);
+
+  // Time slots only unlock once a date is chosen
+  afDate.addEventListener('change', () => {
+    const hasDate = !!afDate.value;
+    afSlotsWrap.classList.toggle('opacity-50', !hasDate);
+    afSlotsWrap.classList.toggle('pointer-events-none', !hasDate);
+    afSlotHint.classList.toggle('hidden', hasDate);
+    setFieldErrorByName('date', false);
+  });
+
+  // ===== Calendar / time slots (dynamic, admin add/delete) =====
+  function renderSlots() {
+    afSlotsWrap.innerHTML = calendarSlots.map(time => `<button type="button" data-time="${escapeHtml(time)}" class="af-slot-btn px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:border-blue-400 hover:text-blue-600 transition-colors">${escapeHtml(time)}</button>`).join('');
+  }
+  renderSlots();
+
+  afSlotsWrap.addEventListener('click', e => {
+    const btn = e.target.closest('.af-slot-btn');
+    if (!btn) return;
+    $$('.af-slot-btn').forEach(b => {
+      b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+      b.classList.add('border-slate-200', 'text-slate-600');
+    });
+    btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+    btn.classList.remove('border-slate-200', 'text-slate-600');
+    selectedTimeSlot = btn.dataset.time;
+    const slotError = afSlotsWrap.closest('div').parentElement.querySelector('.af-error');
+    if (slotError) slotError.classList.add('hidden');
+  });
+
+  function setFieldErrorByName(name, hasError) {
+    const input = apptForm.querySelector(`[name="${name}"]`);
+    if (!input) return;
+    const wrapper = input.closest('div');
+    const errorMsg = wrapper.querySelector('.af-error');
+    if (hasError) {
+      input.classList.add('border-red-400');
+      input.classList.remove('border-slate-200');
+      if (errorMsg) errorMsg.classList.remove('hidden');
+    } else {
+      input.classList.remove('border-red-400');
+      input.classList.add('border-slate-200');
+      if (errorMsg) errorMsg.classList.add('hidden');
+    }
+  }
+
+  apptForm.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(afEmail.value.trim());
+    const cityValid = afCity.value.trim().length > 0;
+    const professionValid = afProfession.value.trim().length > 0;
+    const dateValid = !!afDate.value;
+    const slotValid = !!selectedTimeSlot;
+
+    setFieldErrorByName('email', !emailValid);
+    setFieldErrorByName('city', !cityValid);
+    setFieldErrorByName('profession', !professionValid);
+    setFieldErrorByName('date', !dateValid);
+    const slotError = afSlotsWrap.parentElement.querySelector('.af-error');
+    if (slotError) slotError.classList.toggle('hidden', slotValid);
+
+    if (!emailValid || !cityValid || !professionValid || !dateValid || !slotValid) {
+      return;
+    }
+
+    // All valid — submit to API and show success state
+    registerOrUpdateUser(afEmail.value.trim(), afCity.value.trim());
+    saveAppointmentRequest({ email: afEmail.value.trim(), city: afCity.value.trim(), profession: afProfession.value.trim(), organization: afOrg.value.trim(), website: afWebsite.value.trim(), description: afDescription.value.trim(), date: afDate.value, timeSlot: selectedTimeSlot });
+    (async () => {
+      try { await fetch(API.appointment, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: afEmail.value.trim(), city: afCity.value.trim(), profession: afProfession.value.trim(), organization: afOrg.value.trim(), website: afWebsite.value.trim(), description: afDescription.value.trim(), date: afDate.value, timeSlot: selectedTimeSlot }) }); } catch (e) { /* localStorage fallback already done */ }
+    })();
+    apptFormWrap.classList.add('hidden');
+    apptSuccessBox.classList.remove('hidden');
+    hasBooked = true;
+  });
+
+  [afEmail, afCity, afProfession].forEach(input => {
+    input.addEventListener('input', () => setFieldErrorByName(input.name, false));
+  });
+
+  function resetAppointmentForm() {
+    apptForm.reset();
+    apptFormWrap.classList.remove('hidden');
+    apptSuccessBox.classList.add('hidden');
+    selectedTimeSlot = null;
+    $$('.af-slot-btn').forEach(b => {
+      b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+      b.classList.add('border-slate-200', 'text-slate-600');
+    });
+    afSlotsWrap.classList.add('opacity-50', 'pointer-events-none');
+    afSlotHint.classList.remove('hidden');
+    ['email', 'city', 'profession', 'date'].forEach(name => setFieldErrorByName(name, false));
+    const slotError = afSlotsWrap.parentElement.querySelector('.af-error');
+    if (slotError) slotError.classList.add('hidden');
+  }
+  $('#appt-modal-close').addEventListener('click', resetAppointmentForm);
+  amo.addEventListener('click', e => { if (e.target === amo) resetAppointmentForm(); });
+
+  // ===== Blueprint Resource Links (add/delete restricted to logged-in admins) =====
+  const resourceLinks = loadJSON('lc_links', []);
+  const linkLabelInput = $('#link-label-input');
+  const linkUrlInput = $('#link-url-input');
+  const linkAddBtn = $('#link-add-btn');
+  const linkListWrap = $('#link-list');
+
+  function renderLinks() {
+    const empty = $('#link-list-empty');
+    [...linkListWrap.querySelectorAll('.resource-link-row')].forEach(el => el.remove());
+    if (resourceLinks.length === 0) {
+      if (empty) empty.classList.remove('hidden');
+      return;
+    }
+    if (empty) empty.classList.add('hidden');
+    resourceLinks.forEach((link, i) => {
+      const row = document.createElement('div');
+      row.className = 'resource-link-row flex items-center justify-between gap-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3';
+      row.innerHTML = `
+        <a href="${sanitizeUrl(link.url)}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 text-sm font-medium truncate">${escapeHtml(link.label)} &#8599;</a>
+        ${isAdmin ? `<button class="link-delete-btn text-slate-500 hover:text-red-400 transition-colors flex-shrink-0" data-index="${i}" aria-label="Delete link" title="Delete link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>` : ''}`;
+      linkListWrap.appendChild(row);
+    });
+  }
+  renderLinks();
+
+  if (linkAddBtn) {
+    linkAddBtn.addEventListener('click', () => {
+      if (!isAdmin) return;
+      const label = clampText(linkLabelInput.value.trim(), MAX_SHORT);
+      const urlRaw = linkUrlInput.value.trim();
+      const url = sanitizeUrl(urlRaw);
+      if (!label || !urlRaw) return;
+      if (!url) { alert('Please enter a valid http(s) link.'); return; }
+      resourceLinks.push({ label, url });
+      saveJSON('lc_links', resourceLinks);
+      linkLabelInput.value = '';
+      linkUrlInput.value = '';
+      renderLinks();
+    });
+  }
+
+  if (linkListWrap) {
+    linkListWrap.addEventListener('click', e => {
+      const btn = e.target.closest('.link-delete-btn');
+      if (!btn || !isAdmin) return;
+      const idx = Number(btn.dataset.index);
+      resourceLinks.splice(idx, 1);
+      saveJSON('lc_links', resourceLinks);
+      renderLinks();
+    });
+  }
+
+  // Text edits made on the separate admin.html page are saved into
+  // localStorage under 'lc_editable_text'. This is the public site, so it
+  // only ever reads and displays them — there's no way to write to this
+  // key from here.
+  const editableTexts = loadJSON('lc_editable_text', {});
+  function applyEditableTexts() {
+    $$('[data-editable]').forEach(el => {
+      const key = el.dataset.editable;
+      if (typeof editableTexts[key] === 'string') el.innerHTML = sanitizeHtml(editableTexts[key]);
+    });
+  }
+  applyEditableTexts();
+
+  // Applies current lock state to the live page. Visitors: locked sections
+  // are removed from view and locked features are disabled + click-blocked.
+  // Admins: everything stays visible/clickable, with a lock badge/banner.
+  function applySectionLocks() {
+    LOCKABLE_SECTIONS.forEach(sec => {
+      const el = document.getElementById(sec.id);
+      if (!el) return;
+      const isLocked = lockedSections.includes(sec.id);
+      let banner = el.querySelector(':scope > .admin-locked-banner');
+      // Hide the nav link to a locked section from visitors too, so they
+      // aren't invited to click through to something that isn't there.
+      const navLinks = $$(`a[href="#${sec.id}"]`);
+      if (isLocked && isAdmin) {
+        el.style.display = '';
+        navLinks.forEach(a => { a.style.display = ''; });
+        if (!banner) {
+          banner = document.createElement('div');
+          banner.className = 'admin-locked-banner';
+          banner.innerHTML = '&#128274; <span>Locked &mdash; hidden from visitors right now</span>';
+          el.insertBefore(banner, el.firstChild);
+        }
+      } else if (isLocked && !isAdmin) {
+        el.style.display = 'none';
+        navLinks.forEach(a => { a.style.display = 'none'; });
+        if (banner) banner.remove();
+      } else {
+        el.style.display = '';
+        navLinks.forEach(a => { a.style.display = ''; });
+        if (banner) banner.remove();
       }
     });
-  });
+  }
+
+  function applyFeatureLocks() {
+    LOCKABLE_FEATURES.forEach(f => {
+      const isLocked = !!lockedFeatures[f.id];
+
+      (f.selectors || []).forEach(sel => {
+        const el = $(sel);
+        if (!el) return;
+        let badge = el.parentElement && el.parentElement.querySelector(`.feature-lock-badge[data-feature-id="${f.id}"]`);
+        if (isLocked && isAdmin) {
+          el.removeAttribute('data-locked');
+          if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'feature-lock-badge';
+            badge.dataset.featureId = f.id;
+            badge.innerHTML = '&#128274; Locked';
+            el.insertAdjacentElement('afterend', badge);
+          }
+        } else if (isLocked && !isAdmin) {
+          el.setAttribute('data-locked', 'true');
+          if (badge) badge.remove();
+        } else {
+          el.removeAttribute('data-locked');
+          if (badge) badge.remove();
+        }
+      });
+
+      // Some features (like the resource-links block) are locked as a whole
+      // container rather than via individual button selectors.
+      if (f.container) {
+        const containerEl = $(f.container);
+        if (containerEl) {
+          let cBanner = containerEl.querySelector(':scope > .admin-locked-banner');
+          if (isLocked && isAdmin) {
+            containerEl.style.display = '';
+            if (!cBanner) {
+              cBanner = document.createElement('div');
+              cBanner.className = 'admin-locked-banner rounded-xl mb-4';
+              cBanner.innerHTML = '&#128274; <span>Locked &mdash; hidden from visitors right now</span>';
+              containerEl.insertBefore(cBanner, containerEl.firstChild);
+            }
+          } else if (isLocked && !isAdmin) {
+            containerEl.style.display = 'none';
+            if (cBanner) cBanner.remove();
+          } else {
+            containerEl.style.display = '';
+            if (cBanner) cBanner.remove();
+          }
+        }
+      }
+    });
+  }
+
+  // Block clicks on anything currently locked for the visitor, regardless
+  // of element type (button, link, etc.), and let them know why.
+  document.addEventListener('click', function (e) {
+    const target = e.target.closest('[data-locked="true"]');
+    if (target && !isAdmin) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      showLockedFeatureToast();
+    }
+  }, true);
+
+  function showLockedFeatureToast() {
+    let toast = $('#locked-feature-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'locked-feature-toast';
+      toast.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-sm font-medium px-5 py-3 rounded-full shadow-lg z-[200] transition-opacity duration-300';
+      toast.textContent = 'This feature is temporarily unavailable. Please check back soon.';
+      document.body.appendChild(toast);
+    }
+    toast.style.opacity = '1';
+    clearTimeout(toast._hideTimer);
+    toast._hideTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2600);
+  }
+
+  // Apply whatever locks were saved from a previous session as soon as the
+  // page loads, even before any admin logs in on this device.
+  applySectionLocks();
+  applyFeatureLocks();
+
+
+  // ===== Review form =====
+  const reviewFormUnlocked = $('#review-form-unlocked');
+  const reviewThanks = $('#review-thanks');
+  const reviewAgainBtn = $('#review-again-btn');
+
+  if (reviewAgainBtn) {
+    reviewAgainBtn.addEventListener('click', () => {
+      reviewThanks.classList.add('hidden');
+      reviewFormUnlocked.classList.remove('hidden');
+    });
+  }
+
+  // Star rating picker
+  const reviewForm = $('#review-form');
+  if (reviewForm) {
+    const rvName = $('#rv-name');
+    const rvEmail = $('#rv-email');
+    const rvCity = $('#rv-city');
+    const rvProfession = $('#rv-profession');
+    const rvText = $('#rv-text');
+    const rvStarsWrap = $('#rv-stars');
+    const rvStarBtns = $$('.rv-star-btn');
+    let selectedRating = 0;
+
+    function paintStars(rating) {
+      rvStarBtns.forEach(btn => {
+        const val = Number(btn.dataset.value);
+        const svg = btn.querySelector('.rv-star');
+        svg.setAttribute('fill', val <= rating ? '#2563EB' : '#E2E8F0');
+      });
+    }
+
+    rvStarBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedRating = Number(btn.dataset.value);
+        paintStars(selectedRating);
+        const ratingError = rvStarsWrap.parentElement.querySelector('.rv-error');
+        if (ratingError) ratingError.classList.add('hidden');
+      });
+      btn.addEventListener('mouseenter', () => paintStars(Number(btn.dataset.value)));
+    });
+    rvStarsWrap.addEventListener('mouseleave', () => paintStars(selectedRating));
+
+    function setRvFieldError(input, hasError) {
+      const wrapper = input.closest('div');
+      const errorMsg = wrapper.querySelector('.rv-error');
+      if (hasError) {
+        input.classList.add('border-red-400');
+        input.classList.remove('border-slate-200');
+        if (errorMsg) errorMsg.classList.remove('hidden');
+      } else {
+        input.classList.remove('border-red-400');
+        input.classList.add('border-slate-200');
+        if (errorMsg) errorMsg.classList.add('hidden');
+      }
+    }
+
+    [rvName, rvEmail, rvCity, rvProfession, rvText].forEach(input => {
+      input.addEventListener('input', () => setRvFieldError(input, false));
+    });
+
+    reviewForm.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const nameValid = rvName.value.trim().length > 0;
+      const emailValid = isValidEmail(rvEmail.value.trim());
+      const cityValid = rvCity.value.trim().length > 0;
+      const professionValid = rvProfession.value.trim().length > 0;
+      const textValid = rvText.value.trim().length > 0;
+      const ratingValid = selectedRating > 0;
+
+      setRvFieldError(rvName, !nameValid);
+      setRvFieldError(rvEmail, !emailValid);
+      setRvFieldError(rvCity, !cityValid);
+      setRvFieldError(rvProfession, !professionValid);
+      setRvFieldError(rvText, !textValid);
+      const ratingError = rvStarsWrap.parentElement.querySelector('.rv-error');
+      if (ratingError) ratingError.classList.toggle('hidden', ratingValid);
+
+      if (!nameValid || !emailValid || !cityValid || !professionValid || !textValid || !ratingValid) return;
+
+      const reviewData = { name: rvName.value.trim(), email: rvEmail.value.trim(), city: rvCity.value.trim(), profession: rvProfession.value.trim(), rating: selectedRating, text: rvText.value.trim() };
+      reviews.push(reviewData);
+      saveJSON('lc_reviews', reviews);
+      renderReviews();
+      (async () => {
+        try { await fetch(API.review, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reviewData) }); } catch (e) { /* already saved locally */ }
+      })();
+
+      reviewForm.reset();
+      selectedRating = 0;
+      paintStars(0);
+      reviewFormUnlocked.classList.add('hidden');
+      reviewThanks.classList.remove('hidden');
+    });
+  }
+
+  // Fetch live content from production API, fall back to localStorage cache
+  initFromApi();
 
   // Scroll reveal
   const ro = new IntersectionObserver(entries => {
@@ -741,6 +2085,7 @@
   $$('.pillar-card, .blueprint-card, .testimonial-card, .faq-item, .portfolio-placeholder').forEach(el => {
     el.style.opacity = '0'; el.style.transform = 'translateY(24px)'; el.style.transition = 'opacity .5s ease, transform .5s ease'; ro.observe(el);
   });
+})();
 </script>
 </body>
 </html>
