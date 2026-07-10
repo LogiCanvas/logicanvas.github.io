@@ -753,29 +753,10 @@
 </footer>
 
 <!-- ===== MODAL ===== -->
-<div id="modal-overlay" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-  <div id="modal-box" class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative transform transition-all duration-300 scale-95 opacity-0">
-    <button id="modal-close" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-    <div class="text-center">
-      <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      </div>
-      <h3 class="text-slate-900 font-extrabold text-xl mb-2">Book Your Free Session</h3>
-      <p class="text-slate-400 text-sm leading-relaxed mb-6">No commitment required. Just a focused 30-minute conversation to understand your business and identify where automation can have the biggest impact.</p>
-      <a href="mailto:manojnewdelhi9711@gmail.com?subject=Free%20Appointment%20Request%20%E2%80%94%20LogiCanvas&body=Hi%20Manoj%2C%0A%0AI%27d%20like%20to%20book%20a%20free%20consultation.%0A%0AName%3A%0ABusiness%3A%0ABrief%20description%3A" class="btn-primary w-full text-white font-bold py-3.5 rounded-2xl text-sm inline-block">
-        Send Email to Book &rarr;
-      </a>
-      <p class="text-slate-300 text-xs mt-4">Or email directly: <a href="mailto:manojnewdelhi9711@gmail.com" class="text-blue-500 hover:text-blue-600">manojnewdelhi9711@gmail.com</a></p>
-    </div>
-  </div>
-</div>
-
 <!-- ===== GET STARTED FORM MODAL ===== -->
 <div id="form-modal-overlay" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
   <div id="form-modal-box" class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative transform transition-all duration-300 scale-95 opacity-0 max-h-[90vh] overflow-y-auto">
-    <button id="form-modal-close" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
+    <button id="form-modal-close" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600" aria-label="Close">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
 
@@ -846,7 +827,7 @@
 <!-- ===== CLAIM FREE APPOINTMENT MODAL ===== -->
 <div id="appt-modal-overlay" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
   <div id="appt-modal-box" class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 relative transform transition-all duration-300 scale-95 opacity-0 max-h-[90vh] overflow-y-auto">
-    <button id="appt-modal-close" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600">
+    <button id="appt-modal-close" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600" aria-label="Close">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
 
@@ -1020,7 +1001,6 @@
     try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* ignore storage errors */ }
   }
 
-  let configLoaded = false;
   async function fetchConfig() {
     try {
       const resp = await fetch(API.config);
@@ -1043,14 +1023,12 @@
     if (data.editable_texts) { Object.assign(editableTexts, data.editable_texts); saveJSON('lc_editable_text', editableTexts); }
     if (data.locked_sections) { lockedSections.length = 0; lockedSections.push(...data.locked_sections); saveJSON('lc_locked_sections', lockedSections); }
     if (data.locked_features) { Object.assign(lockedFeatures, data.locked_features); saveJSON('lc_locked_features', lockedFeatures); }
-    configLoaded = true;
-    renderFaqs(); renderPortfolio(); renderBlueprints(); renderCertifications(); renderSocialLinks(); renderSlots(); renderReviews(); applyEditableTexts(); applySectionLocks(); applyFeatureLocks();
+    if (data.resource_links || data.links) { resourceLinks.length = 0; resourceLinks.push(...(data.resource_links || data.links)); saveJSON('lc_links', resourceLinks); }
+    renderFaqs(); renderPortfolio(); renderBlueprints(); renderCertifications(); renderSocialLinks(); renderSlots(); renderReviews(); renderLinks(); applyEditableTexts(); applySectionLocks(); applyFeatureLocks();
   }
 
   // Shared lead data captured from the "Get Started" form, used to prefill the appointment form
   const leadData = { email: '', city: '', profession: '' };
-  let hasRegistered = false; // true once the Get Started form is submitted
-  let hasBooked = false;     // true once an appointment is booked
 
   // ===== Content data (persisted in localStorage so admin edits survive reloads) =====
   const faqs = loadJSON('lc_faqs', [
@@ -1476,7 +1454,7 @@
     list.classList.remove('hidden');
     list.innerHTML = socialLinks.map((s, i) => `
       <span class="inline-flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-full pl-3 pr-2 py-1.5">
-        <a href="${sanitizeUrl(s.url)}" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-blue-400 text-xs font-medium transition-colors">${escapeHtml(s.platform)}</a>
+        ${sanitizeUrl(s.url) ? `<a href="${sanitizeUrl(s.url)}" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-blue-400 text-xs font-medium transition-colors">${escapeHtml(s.platform)}</a>` : `<span class="text-slate-500 text-xs font-medium">${escapeHtml(s.platform)}</span>`}
         ${isAdmin ? `<button class="social-delete-btn text-slate-500 hover:text-red-400 transition-colors" data-index="${i}" title="Delete social link"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>` : ''}
       </span>`).join('');
   }
@@ -1550,17 +1528,9 @@
     });
   }
 
-  // Modal
-  const mo = $('#modal-overlay'), mb = $('#modal-box');
-  function openModal() { mo.classList.remove('hidden'); requestAnimationFrame(() => { mb.classList.remove('scale-95', 'opacity-0'); mb.classList.add('scale-100', 'opacity-100'); }); document.body.style.overflow = 'hidden'; }
-  function closeModal() { mb.classList.add('scale-95', 'opacity-0'); mb.classList.remove('scale-100', 'opacity-100'); setTimeout(() => { mo.classList.add('hidden'); document.body.style.overflow = ''; }, 250); }
-
   ['#pricing-cta'].forEach(s => {
     const el = $(s); if (el) el.addEventListener('click', openAppointmentModal);
   });
-  $('#modal-close').addEventListener('click', closeModal);
-  mo.addEventListener('click', e => { if (e.target === mo) closeModal(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
   // Get Started form modal
   const fmo = $('#form-modal-overlay'), fmb = $('#form-modal-box');
@@ -1637,7 +1607,6 @@
       })();
       leadFormWrap.classList.add('hidden');
       successBox.classList.remove('hidden');
-      hasRegistered = true;
     });
 
     // Clear individual field errors as the user corrects them
@@ -1660,6 +1629,7 @@
     }
     $('#form-modal-close').addEventListener('click', resetLeadForm);
     fmo.addEventListener('click', e => { if (e.target === fmo) resetLeadForm(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !fmo.classList.contains('hidden')) resetLeadForm(); });
   }
 
   // Claim Free Appointment modal
@@ -1673,6 +1643,7 @@
   let selectedTimeSlot = null;
 
   function openAppointmentModal() {
+    if (lockedFeatures['book_appointment'] && !isAdmin) { showLockedFeatureToast(); return; }
     // Prefill from whatever was captured in the Get Started form, if any
     if (leadData.email) afEmail.value = leadData.email;
     if (leadData.city) afCity.value = leadData.city;
@@ -1708,6 +1679,7 @@
 
   // ===== Calendar / time slots (dynamic, admin add/delete) =====
   function renderSlots() {
+    selectedTimeSlot = null;
     afSlotsWrap.innerHTML = calendarSlots.map(time => `<button type="button" data-time="${escapeHtml(time)}" class="af-slot-btn px-3 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:border-blue-400 hover:text-blue-600 transition-colors">${escapeHtml(time)}</button>`).join('');
   }
   renderSlots();
@@ -1770,7 +1742,6 @@
     })();
     apptFormWrap.classList.add('hidden');
     apptSuccessBox.classList.remove('hidden');
-    hasBooked = true;
   });
 
   [afEmail, afCity, afProfession].forEach(input => {
@@ -1794,6 +1765,7 @@
   }
   $('#appt-modal-close').addEventListener('click', resetAppointmentForm);
   amo.addEventListener('click', e => { if (e.target === amo) resetAppointmentForm(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !amo.classList.contains('hidden')) resetAppointmentForm(); });
 
   // ===== Blueprint Resource Links (add/delete restricted to logged-in admins) =====
   const resourceLinks = loadJSON('lc_links', []);
@@ -1814,7 +1786,7 @@
       const row = document.createElement('div');
       row.className = 'resource-link-row flex items-center justify-between gap-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3';
       row.innerHTML = `
-        <a href="${sanitizeUrl(link.url)}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 text-sm font-medium truncate">${escapeHtml(link.label)} &#8599;</a>
+        ${sanitizeUrl(link.url) ? `<a href="${sanitizeUrl(link.url)}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 text-sm font-medium truncate">${escapeHtml(link.label)} &#8599;</a>` : `<span class="text-slate-500 text-sm font-medium truncate">${escapeHtml(link.label)}</span>`}
         ${isAdmin ? `<button class="link-delete-btn text-slate-500 hover:text-red-400 transition-colors flex-shrink-0" data-index="${i}" aria-label="Delete link" title="Delete link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>` : ''}`;
       linkListWrap.appendChild(row);
     });
